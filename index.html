@@ -6,6 +6,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <title>Bitcoin Weather Report</title>
+<!-- Cloudflare Web Analytics -->
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "b4f221b351fd41e99dd5221342c659df"}'></script>
 <style>
   * { box-sizing: border-box; }
   body {
@@ -125,27 +127,28 @@
 </head>
 <body>
   <h1><img src="favicon.svg" alt=""> Bitcoin Weather Report</h1>
-  <div class="updated">Last update: 2026-05-15 18:32:39 UTC · auto-refresh every 10 min<span class="source"> · source: local Pi node</span></div>
-  <div class="status"><span class="ibd">SYNCING — 0.00% (0/0 blocks)</span></div>
+  <div class="updated">Last update: 2026-05-15 18:42:44 UTC · auto-refresh every 10 min<span class="source"> · source: Mac feed (8s old)</span></div>
+  <div class="status"><span class="ok">SYNCED — block 949,477</span></div>
 
   <div class="stats">
     <div class="stat"><div class="lbl">Mempool TXs</div><div class="val">0</div></div>
     <div class="stat"><div class="lbl">Mempool size</div><div class="val">0.00 <small>vMB</small></div></div>
     <div class="stat"><div class="lbl">Median fee (last 6h)</div><div class="val">0.0 <small>sat/vB</small></div></div>
-    <div class="stat"><div class="lbl">Next-block fee</div><div class="val">0.0 <small>sat/vB</small></div></div>
+    <div class="stat"><div class="lbl">Next-block fee</div><div class="val">1.0 <small>sat/vB</small></div></div>
     <div class="stat"><div class="lbl">Oldest TX</div><div class="val">—</div></div>
   </div>
 
   <div class="fee-targets">
     <span><strong>Fee targets</strong> (sat/vB):</span>
-    <span>≤1 block: <b>0.0</b></span>
-    <span>≤3 blocks: <b>0.0</b></span>
-    <span>≤6 blocks: <b>0.0</b></span>
+    <span>≤1 block: <b>1.0</b></span>
+    <span>≤3 blocks: <b>1.0</b></span>
+    <span>≤6 blocks: <b>1.0</b></span>
   </div>
 
   <h2>Notable Events</h2>
   <ul class="events">
-    <li class="event info">No notable events. Calm seas.</li>
+    <li class="event info">58662 blocks found (now at #949,478)</li>
+<li class="event warn">Slow block: last 11.1h ago</li>
   </ul>
 
   <h2>Mempool Heatmap</h2>
