@@ -1,72 +1,57 @@
 {
   "schema_version": 1,
-  "generated_at": 1784061664,
+  "generated_at": 1784062278,
   "weather": {
-    "emoji": "\ud83c\udf24",
-    "label": "Mild conditions",
-    "summary": "Active traffic at moderate fees. Standard wallet defaults will confirm quickly."
+    "emoji": "\u2600\ufe0f",
+    "label": "Clear skies",
+    "summary": "Calm mempool. Cheap and fast confirmations \u2014 a good window for any tx."
   },
   "node": {
-    "height": 958060,
-    "headers": 958060,
+    "height": 958061,
+    "headers": 958061,
     "ibd": false,
     "ibd_progress": 1,
     "feed_source": "local Pi node"
   },
   "mempool": {
-    "n_txs": 24709,
-    "vmb": 5.763,
-    "tx_rewards_btc": 0.02328903,
-    "total_btc": 1048.9936,
-    "median_btc": 0.00016064,
+    "n_txs": 27366,
+    "vmb": 6.236,
+    "tx_rewards_btc": 0.03279724,
+    "total_btc": 5329.9012,
+    "median_btc": 0.00016352,
     "oldest_age": "1.1d"
   },
   "fees": {
     "median_recent_sat_vb": 0.35,
-    "next_block_sat_vb": 3.12,
+    "next_block_sat_vb": 2.409,
     "three_block_sat_vb": 2.003,
     "six_block_sat_vb": 1.192
   },
   "composition_1h": {
-    "monetary": 385,
-    "inscription": 4,
-    "data": 6207,
-    "other": 1,
+    "monetary": 1353,
+    "inscription": 5,
+    "data": 8421,
+    "other": 0,
     "unknown": 0,
-    "non_monetary_pct": 94.2
+    "non_monetary_pct": 86.2
   },
   "inflow_last_cycle": {
-    "monetary": 77,
+    "monetary": 95,
     "inscription": 0,
-    "data": 449,
+    "data": 232,
     "other": 0,
-    "window_sec": 40,
-    "rate_per_sec": 13.15
+    "window_sec": 41,
+    "rate_per_sec": 7.976
   },
   "recent_blocks_summary": {
     "count": 6,
-    "total_txs": 27789,
-    "total_cleared": 25176,
-    "total_moved_btc": 32332.50114677,
-    "total_fees_btc": 0.1383963,
+    "total_txs": 29192,
+    "total_cleared": 26320,
+    "total_moved_btc": 27727.53886097,
+    "total_fees_btc": 0.11237301,
     "total_subsidy_btc": 18.75
   },
   "recent_blocks": [
-    {
-      "height": 958051,
-      "time": 1784056482,
-      "txs_cleared": 5084,
-      "blocks_jumped": 1,
-      "subsidy_sat": 312500000,
-      "fees_sat": 1142709,
-      "total_out_sat": 136334881521,
-      "txs": 5832,
-      "size": 1733031,
-      "explorer_url": "https://mempool.space/block/958051",
-      "video_url": "blocks/block_958051.mp4",
-      "og_url": "blocks/block_958051_og.png",
-      "page_url": "blocks/block_958051.html"
-    },
     {
       "height": 958052,
       "time": 1784056822,
@@ -201,53 +186,68 @@
       "video_url": "blocks/block_958060.mp4",
       "og_url": "blocks/block_958060_og.png",
       "page_url": "blocks/block_958060.html"
+    },
+    {
+      "height": 958061,
+      "time": 1784061825,
+      "txs_cleared": 5419,
+      "blocks_jumped": 1,
+      "subsidy_sat": 312500000,
+      "fees_sat": 1315016,
+      "total_out_sat": 207531574117,
+      "txs": 5914,
+      "size": 1516866,
+      "explorer_url": "https://mempool.space/block/958061",
+      "video_url": "blocks/block_958061.mp4",
+      "og_url": "blocks/block_958061_og.png",
+      "page_url": "blocks/block_958061.html"
     }
   ],
   "events": [
     {
       "severity": "info",
-      "text": "4 urgent whales (>5 BTC @ premium fee)"
+      "text": "13 urgent whales (>5 BTC @ premium fee)"
     },
     {
       "severity": "info",
-      "text": "2 whale txs (\u2265100 BTC pending)"
+      "text": "7 whale txs (\u2265100 BTC pending)"
     }
   ],
   "whales": [
     {
-      "txid": "e671d51cec7af9a6ae8a548197cda9c375dfbdc4ee8232e9d01707716dbbcac3",
-      "btc": 559.79491347,
+      "txid": "6d6e13c3be1acba2f9a69247e7840ed29f5282994c4b00f41605d45ecface59c",
+      "btc": 2939.60501053,
+      "fee_rate_sat_vb": 3.15,
+      "vsize": 160,
+      "age_sec": 367
+    },
+    {
+      "txid": "202fbf2bc2cdab56ab2680ce33e3b043657f52e00244c473b3e153d32525782f",
+      "btc": 559.65795669,
       "fee_rate_sat_vb": 1.199,
-      "vsize": 517,
-      "age_sec": 30
+      "vsize": 432,
+      "age_sec": 207
     },
     {
-      "txid": "f98d044f49242bcaa2418483a87438622957603b96ca1e9a0cf9786996febf79",
-      "btc": 112.42392685,
-      "fee_rate_sat_vb": 0.201,
-      "vsize": 209,
-      "age_sec": 87713
-    },
-    {
-      "txid": "2a4bd65d3634a440b28e68fb639f84def8c31b3debd9fc76ce8abc64ef5b0e95",
-      "btc": 73.23204347,
+      "txid": "73bc018d523158a8ef8b205bb4a3a51ffcee0fb1a1e218ff129c96974016e2d2",
+      "btc": 186.49061183,
       "fee_rate_sat_vb": 1.199,
-      "vsize": 422,
-      "age_sec": 113
+      "vsize": 141,
+      "age_sec": 441
     },
     {
-      "txid": "a3c9c8bae92e26e81be8e887dd7802b6ac0a1bc2b96e9a531b6eaa93a8aa8fba",
-      "btc": 53.13644857,
-      "fee_rate_sat_vb": 2.0,
-      "vsize": 874,
-      "age_sec": 112
+      "txid": "55abd4fd399454f470c0a8cb54b63b91bc618cabc42248c32eac8aeeb580f04f",
+      "btc": 172.99466469,
+      "fee_rate_sat_vb": 1.2,
+      "vsize": 450,
+      "age_sec": 135
     },
     {
-      "txid": "f158b054f6ba503a10cf850d614614d4a75b1cbfe230f4d2b437ded67a8d50cd",
-      "btc": 36.05196527,
-      "fee_rate_sat_vb": 4.0,
-      "vsize": 177,
-      "age_sec": 62
+      "txid": "a88d3be0ecdcd3279a5b6bec9545ef9087cb31676dfe0aa7a40d0c7a78fb29de",
+      "btc": 170.72217807,
+      "fee_rate_sat_vb": 3.151,
+      "vsize": 775,
+      "age_sec": 153
     }
   ]
 }
