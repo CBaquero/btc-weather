@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "generated_at": 1787830248,
+  "generated_at": 1787830381,
   "weather": {
-    "emoji": "\u2600\ufe0f",
-    "label": "Clear skies",
-    "summary": "Calm mempool. Cheap and fast confirmations \u2014 a good window for any tx."
+    "emoji": "\u26c5",
+    "label": "Building",
+    "summary": "Traffic picking up; fees starting to climb."
   },
   "node": {
     "height": 964293,
@@ -14,34 +14,34 @@
     "feed_source": "local Pi node"
   },
   "mempool": {
-    "n_txs": 19544,
-    "vmb": 7.381,
-    "tx_rewards_btc": 0.01716573,
-    "total_btc": 3820.0023,
-    "median_btc": 0.00011987,
+    "n_txs": 22281,
+    "vmb": 7.846,
+    "tx_rewards_btc": 0.02145333,
+    "total_btc": 4609.4472,
+    "median_btc": 0.00012559,
     "oldest_age": "3.6d"
   },
   "fees": {
-    "median_recent_sat_vb": 0.35,
+    "median_recent_sat_vb": 0.343,
     "next_block_sat_vb": 1.07,
     "three_block_sat_vb": 1.005,
     "six_block_sat_vb": 0.359
   },
   "composition_1h": {
-    "monetary": 407,
-    "inscription": 1,
-    "data": 7266,
+    "monetary": 783,
+    "inscription": 2,
+    "data": 9626,
     "other": 0,
     "unknown": 0,
-    "non_monetary_pct": 94.7
+    "non_monetary_pct": 92.5
   },
   "inflow_last_cycle": {
-    "monetary": 330,
+    "monetary": 250,
     "inscription": 1,
-    "data": 2430,
+    "data": 1300,
     "other": 0,
-    "window_sec": 136,
-    "rate_per_sec": 20.301
+    "window_sec": 135,
+    "rate_per_sec": 11.489
   },
   "recent_blocks_summary": {
     "count": 6,
@@ -205,20 +205,16 @@
   ],
   "events": [
     {
-      "severity": "info",
-      "text": "Block #964,293 found"
+      "severity": "warn",
+      "text": "Surge: +2,737 txs in last cycle"
     },
     {
       "severity": "info",
-      "text": "Drained: 3,450 txs cleared"
+      "text": "2 urgent whales (>5 BTC @ premium fee)"
     },
     {
       "severity": "info",
-      "text": "1 urgent whale (>5 BTC @ premium fee)"
-    },
-    {
-      "severity": "info",
-      "text": "4 whale txs (\u2265100 BTC pending)"
+      "text": "6 whale txs (\u2265100 BTC pending)"
     }
   ],
   "whales": [
@@ -227,35 +223,35 @@
       "btc": 2438.53845041,
       "fee_rate_sat_vb": 1.075,
       "vsize": 160,
-      "age_sec": 47
+      "age_sec": 186
+    },
+    {
+      "txid": "17086de329badf3cbab9a2bc30133cbbea6166d158bfdd355f48bbaeb5fccbf1",
+      "btc": 449.53953115,
+      "fee_rate_sat_vb": 1.2,
+      "vsize": 544,
+      "age_sec": 153
     },
     {
       "txid": "663ee7e3b5279b5749549ee2dcb6c66e1aa11d2a64fdeb931d9e94aac15ac3ea",
       "btc": 408.15012705,
       "fee_rate_sat_vb": 1.724,
       "vsize": 225,
-      "age_sec": 31
+      "age_sec": 170
     },
     {
       "txid": "0c913483f2046f08a1170073e412ce575cb954c2d2864aced9ba10a9e8913a72",
       "btc": 124.95024382,
       "fee_rate_sat_vb": 2.677,
       "vsize": 458,
-      "age_sec": 25
+      "age_sec": 164
     },
     {
-      "txid": "f66735c6422e9dbba98b661f1967b7fd2e1874fe1286889ddb25ec4d5d5f0a97",
-      "btc": 114.63964502,
-      "fee_rate_sat_vb": 2.36,
-      "vsize": 200,
+      "txid": "e704e9c4d8aa98927c405bd3b31f78be44bab4182bcd007880d92577424dd2a6",
+      "btc": 122.90902957,
+      "fee_rate_sat_vb": 1.669,
+      "vsize": 142,
       "age_sec": 31
-    },
-    {
-      "txid": "4dc6b72bcc813c6f24448a33dbcaaab1939f1b909a7abdc5c9b826efb0c335ea",
-      "btc": 66.70537774,
-      "fee_rate_sat_vb": 1.198,
-      "vsize": 172,
-      "age_sec": 133
     }
   ]
 }
