@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bitcoin Weather Report — Clear skies</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/png" href="favicon.png">
+<meta name="description" content="Clear skies — Calm mempool. Cheap and fast confirmations — a good window for any tx.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://btcweather.report/">
+<meta property="og:title" content="Bitcoin Weather Report — Clear skies">
+<meta property="og:description" content="Calm mempool. Cheap and fast confirmations — a good window for any tx.">
+<meta property="og:image" content="https://btcweather.report/og.png?t=1793467864">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Bitcoin Weather Report — Clear skies">
+<meta name="twitter:description" content="Calm mempool. Cheap and fast confirmations — a good window for any tx.">
+<meta name="twitter:image" content="https://btcweather.report/og.png?t=1793467864">
+<style>
+:root{
+  --bg:#0d1117; --bg2:#121924; --card:#161e2b; --line:#243042;
+  --text:#e6edf3; --dim:#9fb0c3; --mute:#6c7c90;
+  --accent:#f2a33a; --gold:#e8b44c; --sky:#5cb3e6; --ok:#4fbf7a; --warn:#e3a33b; --bad:#e5534b; --info:#5cb3e6;
+  --c-monetary:#4f9a4f; --c-inscription:#a87a3d; --c-data:#a05050; --c-other:#6e7681;
+  --r1:#3767a8; --r2:#3f8cc4; --r3:#3fae9e; --r4:#7cbf55; --r5:#d4c142; --r6:#eaa13a; --r7:#e2713a; --r8:#d0443b; --r9:#b0337a;
+  --m1:#5cb3e6; --m2:#f2a33a; --m3:#7cbf55; --m4:#c678dd; --m5:#e2713a; --m6:#3fae9e; --m7:#d4c142; --m8:#8b9fe8;
+  --text-mute:var(--mute); --text-dim:var(--dim); --border:var(--line); --bg-card:var(--card);
+  color-scheme:dark;
+}
+@media (prefers-color-scheme: light){
+  :root{
+    --bg:#f6f7f9; --bg2:#eef1f5; --card:#ffffff; --line:#dde3ea;
+    --text:#18212d; --dim:#4b5a6b; --mute:#7a8796;
+    --accent:#c97a12; --gold:#a9781c; --sky:#2a7fb8; --ok:#23884f; --warn:#b7791f; --bad:#c23b33; --info:#2a7fb8;
+    color-scheme:light;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);
+  font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px 40px}
+a{color:var(--sky);text-decoration:none} a:hover{text-decoration:underline}
+small{font-size:.62em;color:var(--dim);font-weight:400;margin-left:.25em}
+.mute{color:var(--mute)}
+.num,.v,.fc-rate,.big,dd,code,table td{font-variant-numeric:tabular-nums}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.88em}
+
+.top{display:flex;flex-wrap:wrap;gap:8px 20px;align-items:center;justify-content:space-between;
+  padding:18px 0 14px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;color:var(--text);font-weight:650;font-size:1.05rem;letter-spacing:.01em}
+.brand:hover{text-decoration:none}
+.meta{color:var(--dim);font-size:.85rem}
+.pill{display:inline-block;padding:1px 8px;border-radius:99px;font-size:.75rem;font-weight:600;letter-spacing:.03em;text-transform:uppercase}
+.pill.ok{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok)}
+.pill.warn{background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn)}
+
+section{margin-top:34px}
+.sec-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px;margin-bottom:12px}
+h2{font-size:.8rem;text-transform:uppercase;letter-spacing:.12em;color:var(--accent);margin:0;font-weight:700}
+.sec-h p{margin:0;color:var(--mute);font-size:.85rem}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.k{font-size:.72rem;text-transform:uppercase;letter-spacing:.09em;color:var(--mute);font-weight:600}
+.k.sub{margin-top:16px;margin-bottom:6px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,460px),1fr));gap:0 24px}
+.grid2>section,.now>*{min-width:0}
+.scroll{overflow-x:auto;padding:6px 8px}
+
+/* now */
+.now{margin-top:22px;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1.4fr);gap:20px;
+  background:linear-gradient(135deg,var(--bg2),var(--card));border:1px solid var(--line);border-radius:16px;padding:22px}
+.now.sev-calm{--sev:var(--ok)} .now.sev-mild{--sev:var(--sky)} .now.sev-warming{--sev:var(--warn)}
+.now.sev-alert{--sev:var(--r7)} .now.sev-critical{--sev:var(--bad)}
+.now{box-shadow:inset 3px 0 0 var(--sev,var(--ok))}
+.cond{display:flex;gap:18px;align-items:flex-start}
+.cond-emoji{font-size:4.2rem;line-height:1}
+h1{margin:2px 0 6px;font-size:2rem;line-height:1.15;font-weight:700;letter-spacing:-.01em}
+.summary{margin:0;color:var(--dim);font-size:1rem}
+.advice{margin:12px 0 0;padding:10px 12px;border-radius:8px;background:color-mix(in srgb,var(--sev,var(--ok)) 10%,transparent);font-size:.9rem}
+.insts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.inst{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.inst .v{font-size:1.65rem;font-weight:650;margin:2px 0 0;line-height:1.2}
+.inst .s{color:var(--dim);font-size:.8rem}
+.delta{font-size:.75rem;font-weight:600}
+.delta.up{color:var(--warn)} .delta.down{color:var(--ok)} .delta.flat{color:var(--mute)}
+@media (max-width:860px){.now{grid-template-columns:1fr}}
+@media (max-width:420px){.insts{grid-template-columns:1fr}.cond-emoji{font-size:3rem}h1{font-size:1.6rem}}
+
+/* forecast */
+.forecast{list-style:none;margin:0;padding:0 0 6px;display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory}
+.fc{flex:1 0 116px;max-width:168px;scroll-snap-align:start;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center}
+.fc:first-child{border-color:color-mix(in srgb,var(--accent) 55%,var(--line))}
+.fc-h{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mute);font-weight:600}
+.fc-sky{font-size:1.9rem;margin:6px 0 2px}
+.fc-rate{font-size:1.5rem;font-weight:700;color:var(--c,var(--text))}
+.fc-unit{font-size:.7rem;color:var(--mute)}
+.fc-range{font-size:.8rem;color:var(--dim);margin:6px 0}
+.fc-meta{font-size:.72rem;color:var(--mute);margin-top:6px}
+.fc.tail{background:transparent;border-style:dashed}
+.fill{height:4px;background:var(--line);border-radius:2px;overflow:hidden}
+.fill span{display:block;height:100%;background:var(--accent)}
+
+/* tables */
+table{width:100%;border-collapse:collapse;font-size:.88rem}
+th{font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;color:var(--mute);font-weight:600;text-align:left;padding:6px 8px;white-space:nowrap}
+td{padding:7px 8px;border-top:1px solid var(--line);white-space:nowrap}
+.num{text-align:right}
+td.bar{width:40%;padding-right:12px}
+td.bar span{display:block;height:12px;border-radius:3px;min-width:2px}
+td.bar.sm{width:70px} td.bar.sm span{height:8px;background:var(--sky);opacity:.75}
+.bands th[scope=row]{font-weight:600;color:var(--dim);text-transform:none;letter-spacing:0;font-size:.82rem;font-variant-numeric:tabular-nums}
+td.slow{color:var(--warn)}
+.empty{color:var(--mute);text-align:center;padding:14px}
+
+/* bars & legends */
+.hbar{display:flex;height:14px;border-radius:4px;overflow:hidden;background:var(--line)}
+.hbar span{display:block;height:100%}
+.legend{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.82rem;color:var(--dim)}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px}
+.share{display:block;width:100%;height:56px;border-radius:4px}
+.big{font-size:1.4rem;font-weight:650;margin:0}
+.prog{height:10px;border-radius:5px;background:var(--line);overflow:hidden;margin:8px 0 6px}
+.prog span{display:block;height:100%;background:var(--sky)} .prog.gold span{background:var(--gold)}
+.ln{margin:0 0 18px;color:var(--dim);font-size:.88rem} .ln:last-child{margin-bottom:0}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin:16px 0 0}
+.facts dt{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mute);font-weight:600}
+.facts dd{margin:0;font-size:1.15rem;font-weight:650}
+
+/* climate */
+.climate{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:12px}
+.clim{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px 8px}
+.chart{display:block;width:100%;height:64px;margin-top:8px}
+.chart .line{fill:none;stroke-width:1.6}
+.chart-axis{display:flex;justify-content:space-between;font-size:.7rem;color:var(--mute)}
+.chart-empty{height:64px;display:grid;place-items:center;color:var(--mute);font-size:.8rem}
+
+/* events & notes */
+.events{list-style:none;margin:0 0 12px;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.ev{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--sky);border-radius:8px;padding:6px 10px;font-size:.85rem}
+.ev.warn,.ev.warning{border-left-color:var(--warn)} .ev.alert,.ev.critical{border-left-color:var(--bad)}
+.radar img{display:block;width:100%;border-radius:6px}
+details.notes>summary{list-style:none;cursor:pointer;margin-bottom:12px}
+details.notes>summary::-webkit-details-marker{display:none}
+details.notes>summary h2{display:inline}
+details.notes>summary::after{content:" ▾";color:var(--mute)}
+.note{display:grid;grid-template-columns:150px 1fr;gap:4px 18px;padding:12px 0;border-top:1px solid var(--line);font-size:.92rem;color:var(--dim)}
+.note-k{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mute);font-weight:600;padding-top:2px}
+.note b{color:var(--text)}
+@media (max-width:640px){.note{grid-template-columns:1fr}}
+
+/* footer + low-entropy fragment (shares v1 class names) */
+.footer{margin-top:40px;padding-top:18px;border-top:1px solid var(--line);color:var(--mute);font-size:.82rem}
+.footer a{color:var(--dim)}
+.howto summary{cursor:pointer;color:var(--dim)} .howto ul{padding-left:18px}
+.station{margin:14px 0 4px}
+details.mc{margin-top:34px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+details.mc>summary{cursor:pointer;font-weight:650}
+.trend-meta{color:var(--mute);font-size:.8rem;margin-top:8px}
+.commentary{color:var(--dim);font-size:.9rem}
+.trends{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.trend{border:1px solid var(--line);border-radius:10px;padding:10px}
+.trend-lbl{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mute)}
+.trend-val{font-weight:650}
+.spark{max-width:100%}
+details.mc table{margin-top:10px}
+</style>
+</head>
+<body data-generated="1793467864">
+<div class="wrap">
+
+<header class="top">
+  <a class="brand" href="./"><img src="favicon.svg" alt="" width="28" height="28">Bitcoin Weather Report</a>
+  <div class="meta"><span class="pill ok">synced</span> block <b>974,001</b> · updated <time data-ts="1793467864">1s ago</time></div>
+</header>
+
+<section class="now sev-calm">
+  <div class="cond">
+    <div class="cond-emoji" aria-hidden="true">☀️</div>
+    <div>
+      <h1>Clear skies</h1>
+      <p class="summary">Calm mempool. Cheap and fast confirmations — a good window for any tx.</p>
+      <p class="advice"><b>Good window for consolidations or non-urgent traffic</b> — paying just 1.1 sat/vB confirms in the next block.</p>
+    </div>
+  </div>
+  <div class="insts">
+      <div class="inst">
+        <div class="k">Next-block fee</div>
+        <div class="v">1.1<small>sat/vB</small></div>
+        <div class="s">≤3 blk 1.1 · ≤6 blk 0.13</div>
+        <span class="delta flat">≈ 24h avg</span>
+      </div>
+      <div class="inst">
+        <div class="k">Backlog</div>
+        <div class="v">18.2<small>vMB</small></div>
+        <div class="s">≈ 18.2 blocks · 48,903 txs</div>
+        <span class="delta down">▼ 10% vs 24h avg</span>
+      </div>
+      <div class="inst">
+        <div class="k">Arrivals</div>
+        <div class="v">148<small>tx/min</small></div>
+        <div class="s">10-min average · oldest waiting 14.0d</div>
+        <span class="delta down">▼ 51% vs 24h avg</span>
+      </div>
+      <div class="inst">
+        <div class="k">Last block</div>
+        <div class="v"><time data-ts="1793467033">14m ago</time></div>
+        <div class="s">#974,001 · 144 blocks in 24h</div>
+        <span class="delta flat">avg interval 10m</span>
+      </div></div>
+</section>
+
+<section>
+  <div class="sec-h"><h2>Forecast</h2><p>The next blocks as this node would build them right now, filled from the mempool in mining order (cluster-mempool chunk fee rate).</p></div>
+  <ol class="forecast">
+        <li class="fc">
+          <div class="fc-h">Next block</div>
+          <div class="fc-sky" aria-hidden="true">🌤</div>
+          <div class="fc-rate" style="--c:var(--r3)">1.2</div>
+          <div class="fc-unit">sat/vB median</div>
+          <div class="fc-range">0.60 – 201</div>
+          <div class="fill" title="98% full"><span style="width:98%"></span></div>
+          <div class="fc-meta">2,988 txs · 0.0192 ₿</div>
+        </li>
+        <li class="fc">
+          <div class="fc-h">Block +2</div>
+          <div class="fc-sky" aria-hidden="true">☀️</div>
+          <div class="fc-rate" style="--c:var(--r1)">0.13</div>
+          <div class="fc-unit">sat/vB median</div>
+          <div class="fc-range">0.13 – 0.60</div>
+          <div class="fill" title="100% full"><span style="width:100%"></span></div>
+          <div class="fc-meta">4,616 txs · 0.0029 ₿</div>
+        </li>
+        <li class="fc">
+          <div class="fc-h">Block +3</div>
+          <div class="fc-sky" aria-hidden="true">☀️</div>
+          <div class="fc-rate" style="--c:var(--r1)">0.13</div>
+          <div class="fc-unit">sat/vB median</div>
+          <div class="fc-range">0.12 – 0.13</div>
+          <div class="fill" title="100% full"><span style="width:100%"></span></div>
+          <div class="fc-meta">7,970 txs · 0.0013 ₿</div>
+        </li>
+        <li class="fc">
+          <div class="fc-h">Block +4</div>
+          <div class="fc-sky" aria-hidden="true">☀️</div>
+          <div class="fc-rate" style="--c:var(--r1)">0.12</div>
+          <div class="fc-unit">sat/vB median</div>
+          <div class="fc-range">0.12 – 0.12</div>
+          <div class="fill" title="99% full"><span style="width:99%"></span></div>
+          <div class="fc-meta">6,983 txs · 0.0012 ₿</div>
+        </li>
+        <li class="fc">
+          <div class="fc-h">Block +5</div>
+          <div class="fc-sky" aria-hidden="true">☀️</div>
+          <div class="fc-rate" style="--c:var(--r1)">0.12</div>
+          <div class="fc-unit">sat/vB median</div>
+          <div class="fc-range">0.12 – 0.12</div>
+          <div class="fill" title="97% full"><span style="width:97%"></span></div>
+          <div class="fc-meta">67 txs · 0.0012 ₿</div>
+        </li>
+        <li class="fc">
+          <div class="fc-h">Block +6</div>
+          <div class="fc-sky" aria-hidden="true">☀️</div>
+          <div class="fc-rate" style="--c:var(--r1)">0.12</div>
+          <div class="fc-unit">sat/vB median</div>
+          <div class="fc-range">0.12 – 0.12</div>
+          <div class="fill" title="99% full"><span style="width:99%"></span></div>
+          <div class="fc-meta">15 txs · 0.0012 ₿</div>
+        </li>
+        <li class="fc">
+          <div class="fc-h">Block +7</div>
+          <div class="fc-sky" aria-hidden="true">☀️</div>
+          <div class="fc-rate" style="--c:var(--r1)">0.12</div>
+          <div class="fc-unit">sat/vB median</div>
+          <div class="fc-range">0.12 – 0.12</div>
+          <div class="fill" title="99% full"><span style="width:99%"></span></div>
+          <div class="fc-meta">15 txs · 0.0012 ₿</div>
+        </li>
+        <li class="fc">
+          <div class="fc-h">Block +8</div>
+          <div class="fc-sky" aria-hidden="true">☀️</div>
+          <div class="fc-rate" style="--c:var(--r1)">0.12</div>
+          <div class="fc-unit">sat/vB median</div>
+          <div class="fc-range">0.12 – 0.12</div>
+          <div class="fill" title="99% full"><span style="width:99%"></span></div>
+          <div class="fc-meta">15 txs · 0.0012 ₿</div>
+        </li>
+        <li class="fc tail">
+          <div class="fc-h">Beyond</div>
+          <div class="fc-sky" aria-hidden="true">🌫</div>
+          <div class="fc-rate">10<small> blocks</small></div>
+          <div class="fc-unit">more backlog</div>
+          <div class="fc-range">0.10 – 0.12</div>
+          <div class="fc-meta">26.2k txs · 10.3 vMB</div>
+        </li></ol>
+</section>
+
+<div class="grid2">
+  <section>
+    <div class="sec-h"><h2>Pressure</h2><p>Mempool weight by fee rate (sat/vB), and how deep each band sits.</p></div>
+    <div class="card"><table class="bands">
+      <thead><tr><th>sat/vB</th><th></th><th class="num">vMB</th><th class="num">txs</th><th>queue position</th></tr></thead>
+      <tbody>
+          <tr>
+            <th scope="row">≥ 50</th>
+            <td class="bar"><span style="width:0.0%;background:var(--r9)"></span></td>
+            <td class="num">0.00</td>
+            <td class="num">4</td>
+            <td class="mute">next block</td>
+          </tr>
+          <tr>
+            <th scope="row">20–50</th>
+            <td class="bar"><span style="width:0.0%;background:var(--r8)"></span></td>
+            <td class="num">0.00</td>
+            <td class="num">10</td>
+            <td class="mute">next block</td>
+          </tr>
+          <tr>
+            <th scope="row">10–20</th>
+            <td class="bar"><span style="width:0.0%;background:var(--r7)"></span></td>
+            <td class="num">0.01</td>
+            <td class="num">33</td>
+            <td class="mute">next block</td>
+          </tr>
+          <tr>
+            <th scope="row">5.0–10</th>
+            <td class="bar"><span style="width:0.2%;background:var(--r6)"></span></td>
+            <td class="num">0.03</td>
+            <td class="num">144</td>
+            <td class="mute">next block</td>
+          </tr>
+          <tr>
+            <th scope="row">3.0–5.0</th>
+            <td class="bar"><span style="width:0.7%;background:var(--r5)"></span></td>
+            <td class="num">0.11</td>
+            <td class="num">467</td>
+            <td class="mute">next block</td>
+          </tr>
+          <tr>
+            <th scope="row">2.0–3.0</th>
+            <td class="bar"><span style="width:1.2%;background:var(--r4)"></span></td>
+            <td class="num">0.20</td>
+            <td class="num">924</td>
+            <td class="mute">next block</td>
+          </tr>
+          <tr>
+            <th scope="row">1.0–2.0</th>
+            <td class="bar"><span style="width:3.3%;background:var(--r3)"></span></td>
+            <td class="num">0.56</td>
+            <td class="num">1,377</td>
+            <td class="mute">next block</td>
+          </tr>
+          <tr>
+            <th scope="row">0.50–1.0</th>
+            <td class="bar"><span style="width:2.5%;background:var(--r2)"></span></td>
+            <td class="num">0.42</td>
+            <td class="num">52</td>
+            <td class="mute">next block</td>
+          </tr>
+          <tr>
+            <th scope="row">0.00–0.50</th>
+            <td class="bar"><span style="width:100.0%;background:var(--r1)"></span></td>
+            <td class="num">16.92</td>
+            <td class="num">45.9k</td>
+            <td class="mute">~1 blocks deep</td>
+          </tr></tbody>
+    </table></div>
+  </section>
+  <section>
+    <div class="sec-h"><h2>In the air</h2><p>What arrived in the last hour, by type.</p></div>
+    <div class="card">
+      <div class="hbar"><span style="width:51.20%;background:var(--c-monetary)" title="Monetary 51.2%"></span><span style="width:0.18%;background:var(--c-inscription)" title="Inscription 0.2%"></span><span style="width:48.62%;background:var(--c-data)" title="Data 48.6%"></span></div><ul class="legend"><li><i style="background:var(--c-monetary)"></i>Monetary <b>2,920</b> <span class="mute">51%</span></li><li><i style="background:var(--c-inscription)"></i>Inscription <b>10</b> <span class="mute">0%</span></li><li><i style="background:var(--c-data)"></i>Data <b>2,773</b> <span class="mute">49%</span></li><li><i style="background:var(--c-other)"></i>Other <b>0</b> <span class="mute">0%</span></li></ul>
+      <div class="k sub">Last 24h share</div>
+      <svg class="share" viewBox="0 0 1000 100" preserveAspectRatio="none" role="img" aria-label="24 hour composition"><polygon points="0.0,7.9 4.2,6.9 8.4,6.1 12.6,5.3 16.7,6.3 20.9,5.7 25.1,6.0 29.3,6.9 33.5,77.2 37.7,61.7 41.8,50.5 46.0,43.9 50.2,46.5 54.4,47.2 58.6,7.2 62.8,80.1 66.9,72.7 71.1,63.9 75.3,60.4 79.5,66.1 83.7,60.0 87.9,76.9 92.1,37.6 96.2,35.1 100.4,64.3 104.6,86.1 108.8,79.5 113.0,70.7 117.2,64.3 121.3,80.9 125.5,88.8 129.7,92.3 133.9,88.6 138.1,88.9 142.3,82.1 146.4,80.0 150.6,82.2 154.8,71.0 159.0,8.3 163.2,5.1 167.4,5.7 171.5,26.9 175.7,22.7 179.9,15.2 184.1,11.8 188.3,9.9 192.5,13.9 196.7,82.8 200.8,85.9 205.0,77.2 209.2,78.6 213.4,78.4 217.6,83.6 221.8,69.5 225.9,82.1 230.1,70.5 234.3,80.4 238.5,78.7 242.7,74.7 246.9,91.2 251.0,86.4 255.2,86.3 259.4,86.7 263.6,89.8 267.8,93.3 272.0,91.9 276.2,92.4 280.3,89.6 284.5,90.3 288.7,90.3 292.9,75.4 297.1,33.9 301.3,25.6 305.4,19.9 309.6,12.6 313.8,7.2 318.0,6.9 322.2,6.1 326.4,22.3 330.5,14.6 334.7,11.0 338.9,9.6 343.1,10.6 347.3,12.0 351.5,8.9 355.6,7.8 359.8,9.6 364.0,8.0 368.2,4.1 372.4,3.7 376.6,3.5 380.8,3.5 384.9,6.7 389.1,6.4 393.3,5.8 397.5,4.6 401.7,4.4 405.9,5.9 410.0,5.3 414.2,4.8 418.4,4.8 422.6,5.9 426.8,6.5 431.0,5.5 435.1,5.0 439.3,5.7 443.5,6.4 447.7,17.0 451.9,14.9 456.1,21.6 460.3,13.2 464.4,30.6 468.6,18.3 472.8,24.8 477.0,13.1 481.2,15.2 485.4,51.7 489.5,43.9 493.7,45.3 497.9,27.0 502.1,74.9 506.3,86.0 510.5,90.8 514.6,88.8 518.8,90.2 523.0,82.9 527.2,76.2 531.4,90.3 535.6,92.8 539.7,83.2 543.9,87.6 548.1,88.0 552.3,92.4 556.5,89.8 560.7,72.7 564.9,66.8 569.0,74.8 573.2,80.7 577.4,84.3 581.6,75.8 585.8,66.6 590.0,49.6 594.1,40.6 598.3,62.0 602.5,64.1 606.7,88.7 610.9,95.0 615.1,95.4 619.2,95.9 623.4,89.8 627.6,92.1 631.8,95.3 636.0,95.1 640.2,94.9 644.4,95.0 648.5,92.7 652.7,89.2 656.9,95.5 661.1,97.4 665.3,96.1 669.5,88.1 673.6,92.9 677.8,87.5 682.0,81.5 686.2,81.0 690.4,69.1 694.6,75.5 698.7,91.9 702.9,86.3 707.1,85.5 711.3,91.6 715.5,95.0 719.7,93.7 723.8,88.1 728.0,92.0 732.2,94.3 736.4,96.5 740.6,95.1 744.8,89.6 749.0,82.1 753.1,92.9 757.3,86.3 761.5,89.0 765.7,93.4 769.9,88.3 774.1,91.3 778.2,93.8 782.4,86.5 786.6,79.8 790.8,73.6 795.0,82.7 799.2,85.4 803.3,65.6 807.5,37.8 811.7,88.8 815.9,91.5 820.1,90.9 824.3,85.9 828.5,88.5 832.6,92.7 836.8,81.8 841.0,83.4 845.2,84.8 849.4,85.0 853.6,73.1 857.7,49.9 861.9,45.3 866.1,41.0 870.3,76.8 874.5,87.9 878.7,75.6 882.8,66.0 887.0,59.2 891.2,65.5 895.4,56.9 899.6,26.1 903.8,11.3 907.9,10.6 912.1,12.8 916.3,12.3 920.5,11.6 924.7,8.8 928.9,8.1 933.1,6.1 937.2,54.4 941.4,83.5 945.6,88.3 949.8,80.9 954.0,92.3 958.2,82.4 962.3,80.8 966.5,91.7 970.7,84.7 974.9,82.9 979.1,77.8 983.3,69.5 987.4,71.1 991.6,58.5 995.8,54.8 1000.0,57.0 1000.0,100.0 995.8,100.0 991.6,100.0 987.4,100.0 983.3,100.0 979.1,100.0 974.9,100.0 970.7,100.0 966.5,100.0 962.3,100.0 958.2,100.0 954.0,100.0 949.8,100.0 945.6,100.0 941.4,100.0 937.2,100.0 933.1,100.0 928.9,100.0 924.7,100.0 920.5,100.0 916.3,100.0 912.1,100.0 907.9,100.0 903.8,100.0 899.6,100.0 895.4,100.0 891.2,100.0 887.0,100.0 882.8,100.0 878.7,100.0 874.5,100.0 870.3,100.0 866.1,100.0 861.9,100.0 857.7,100.0 853.6,100.0 849.4,100.0 845.2,100.0 841.0,100.0 836.8,100.0 832.6,100.0 828.5,100.0 824.3,100.0 820.1,100.0 815.9,100.0 811.7,100.0 807.5,100.0 803.3,100.0 799.2,100.0 795.0,100.0 790.8,100.0 786.6,100.0 782.4,100.0 778.2,100.0 774.1,100.0 769.9,100.0 765.7,100.0 761.5,100.0 757.3,100.0 753.1,100.0 749.0,100.0 744.8,100.0 740.6,100.0 736.4,100.0 732.2,100.0 728.0,100.0 723.8,100.0 719.7,100.0 715.5,100.0 711.3,100.0 707.1,100.0 702.9,100.0 698.7,100.0 694.6,100.0 690.4,100.0 686.2,100.0 682.0,100.0 677.8,100.0 673.6,100.0 669.5,100.0 665.3,100.0 661.1,100.0 656.9,100.0 652.7,100.0 648.5,100.0 644.4,100.0 640.2,100.0 636.0,100.0 631.8,100.0 627.6,100.0 623.4,100.0 619.2,100.0 615.1,100.0 610.9,100.0 606.7,100.0 602.5,100.0 598.3,100.0 594.1,100.0 590.0,100.0 585.8,100.0 581.6,100.0 577.4,100.0 573.2,100.0 569.0,100.0 564.9,100.0 560.7,100.0 556.5,100.0 552.3,100.0 548.1,100.0 543.9,100.0 539.7,100.0 535.6,100.0 531.4,100.0 527.2,100.0 523.0,100.0 518.8,100.0 514.6,100.0 510.5,100.0 506.3,100.0 502.1,100.0 497.9,100.0 493.7,100.0 489.5,100.0 485.4,100.0 481.2,100.0 477.0,100.0 472.8,100.0 468.6,100.0 464.4,100.0 460.3,100.0 456.1,100.0 451.9,100.0 447.7,100.0 443.5,100.0 439.3,100.0 435.1,100.0 431.0,100.0 426.8,100.0 422.6,100.0 418.4,100.0 414.2,100.0 410.0,100.0 405.9,100.0 401.7,100.0 397.5,100.0 393.3,100.0 389.1,100.0 384.9,100.0 380.8,100.0 376.6,100.0 372.4,100.0 368.2,100.0 364.0,100.0 359.8,100.0 355.6,100.0 351.5,100.0 347.3,100.0 343.1,100.0 338.9,100.0 334.7,100.0 330.5,100.0 326.4,100.0 322.2,100.0 318.0,100.0 313.8,100.0 309.6,100.0 305.4,100.0 301.3,100.0 297.1,100.0 292.9,100.0 288.7,100.0 284.5,100.0 280.3,100.0 276.2,100.0 272.0,100.0 267.8,100.0 263.6,100.0 259.4,100.0 255.2,100.0 251.0,100.0 246.9,100.0 242.7,100.0 238.5,100.0 234.3,100.0 230.1,100.0 225.9,100.0 221.8,100.0 217.6,100.0 213.4,100.0 209.2,100.0 205.0,100.0 200.8,100.0 196.7,100.0 192.5,100.0 188.3,100.0 184.1,100.0 179.9,100.0 175.7,100.0 171.5,100.0 167.4,100.0 163.2,100.0 159.0,100.0 154.8,100.0 150.6,100.0 146.4,100.0 142.3,100.0 138.1,100.0 133.9,100.0 129.7,100.0 125.5,100.0 121.3,100.0 117.2,100.0 113.0,100.0 108.8,100.0 104.6,100.0 100.4,100.0 96.2,100.0 92.1,100.0 87.9,100.0 83.7,100.0 79.5,100.0 75.3,100.0 71.1,100.0 66.9,100.0 62.8,100.0 58.6,100.0 54.4,100.0 50.2,100.0 46.0,100.0 41.8,100.0 37.7,100.0 33.5,100.0 29.3,100.0 25.1,100.0 20.9,100.0 16.7,100.0 12.6,100.0 8.4,100.0 4.2,100.0 0.0,100.0" style="fill:var(--c-monetary)"/><polygon points="0.0,6.3 4.2,6.1 8.4,5.6 12.6,5.0 16.7,5.9 20.9,5.5 25.1,5.7 29.3,6.5 33.5,77.0 37.7,61.5 41.8,50.3 46.0,43.7 50.2,46.3 54.4,47.0 58.6,7.0 62.8,79.8 66.9,72.2 71.1,63.1 75.3,59.3 79.5,65.6 83.7,59.5 87.9,76.8 92.1,37.4 96.2,34.9 100.4,64.1 104.6,86.0 108.8,79.4 113.0,70.6 117.2,64.1 121.3,80.8 125.5,88.7 129.7,92.1 133.9,88.5 138.1,88.8 142.3,82.0 146.4,79.9 150.6,82.2 154.8,70.9 159.0,8.3 163.2,5.0 167.4,5.6 171.5,26.5 175.7,22.2 179.9,14.9 184.1,11.6 188.3,9.7 192.5,13.3 196.7,82.4 200.8,85.6 205.0,76.9 209.2,78.2 213.4,78.1 217.6,83.5 221.8,69.3 225.9,82.0 230.1,70.4 234.3,80.2 238.5,78.5 242.7,74.6 246.9,91.0 251.0,86.2 255.2,86.2 259.4,86.6 263.6,89.7 267.8,93.2 272.0,91.8 276.2,92.3 280.3,89.5 284.5,90.2 288.7,90.1 292.9,75.3 297.1,33.8 301.3,25.4 305.4,19.8 309.6,12.4 313.8,7.0 318.0,6.2 322.2,5.8 326.4,21.3 330.5,13.9 334.7,10.5 338.9,9.2 343.1,10.3 347.3,11.6 351.5,8.8 355.6,7.7 359.8,9.4 364.0,7.9 368.2,3.8 372.4,3.5 376.6,3.3 380.8,3.1 384.9,5.6 389.1,5.8 393.3,5.3 397.5,4.3 401.7,4.2 405.9,5.6 410.0,5.1 414.2,4.7 418.4,4.6 422.6,5.6 426.8,6.2 431.0,5.3 435.1,4.8 439.3,5.3 443.5,5.3 447.7,16.1 451.9,14.3 456.1,20.6 460.3,12.8 464.4,29.9 468.6,18.1 472.8,24.6 477.0,12.9 481.2,15.0 485.4,51.2 489.5,43.5 493.7,45.0 497.9,26.8 502.1,74.6 506.3,85.9 510.5,90.7 514.6,88.7 518.8,90.1 523.0,82.8 527.2,76.1 531.4,90.2 535.6,92.7 539.7,83.1 543.9,87.5 548.1,88.0 552.3,92.3 556.5,89.8 560.7,72.7 564.9,66.7 569.0,74.7 573.2,80.6 577.4,84.2 581.6,75.6 585.8,66.4 590.0,49.5 594.1,40.5 598.3,61.9 602.5,64.0 606.7,88.7 610.9,94.9 615.1,95.4 619.2,95.9 623.4,89.8 627.6,92.0 631.8,95.3 636.0,95.1 640.2,94.9 644.4,95.0 648.5,92.7 652.7,89.2 656.9,95.5 661.1,97.4 665.3,96.1 669.5,88.0 673.6,92.9 677.8,87.4 682.0,81.5 686.2,81.0 690.4,69.0 694.6,75.2 698.7,91.5 702.9,86.1 707.1,85.2 711.3,91.3 715.5,94.6 719.7,93.5 723.8,88.0 728.0,92.0 732.2,94.2 736.4,96.4 740.6,94.9 744.8,89.5 749.0,82.0 753.1,92.7 757.3,86.2 761.5,88.9 765.7,93.2 769.9,88.2 774.1,91.2 778.2,93.7 782.4,86.5 786.6,79.7 790.8,73.5 795.0,82.7 799.2,85.3 803.3,65.5 807.5,37.5 811.7,88.8 815.9,91.4 820.1,90.9 824.3,85.9 828.5,88.4 832.6,92.6 836.8,81.7 841.0,83.4 845.2,84.8 849.4,85.0 853.6,73.0 857.7,49.8 861.9,45.1 866.1,40.8 870.3,76.6 874.5,87.9 878.7,75.5 882.8,65.9 887.0,59.1 891.2,65.4 895.4,56.8 899.6,26.0 903.8,11.2 907.9,10.5 912.1,12.7 916.3,12.1 920.5,11.3 924.7,8.3 928.9,7.6 933.1,5.7 937.2,53.8 941.4,83.1 945.6,88.2 949.8,80.9 954.0,92.2 958.2,82.4 962.3,80.7 966.5,91.6 970.7,84.6 974.9,82.9 979.1,77.7 983.3,69.4 987.4,71.0 991.6,58.3 995.8,54.2 1000.0,56.8 1000.0,57.0 995.8,54.8 991.6,58.5 987.4,71.1 983.3,69.5 979.1,77.8 974.9,82.9 970.7,84.7 966.5,91.7 962.3,80.8 958.2,82.4 954.0,92.3 949.8,80.9 945.6,88.3 941.4,83.5 937.2,54.4 933.1,6.1 928.9,8.1 924.7,8.8 920.5,11.6 916.3,12.3 912.1,12.8 907.9,10.6 903.8,11.3 899.6,26.1 895.4,56.9 891.2,65.5 887.0,59.2 882.8,66.0 878.7,75.6 874.5,87.9 870.3,76.8 866.1,41.0 861.9,45.3 857.7,49.9 853.6,73.1 849.4,85.0 845.2,84.8 841.0,83.4 836.8,81.8 832.6,92.7 828.5,88.5 824.3,85.9 820.1,90.9 815.9,91.5 811.7,88.8 807.5,37.8 803.3,65.6 799.2,85.4 795.0,82.7 790.8,73.6 786.6,79.8 782.4,86.5 778.2,93.8 774.1,91.3 769.9,88.3 765.7,93.4 761.5,89.0 757.3,86.3 753.1,92.9 749.0,82.1 744.8,89.6 740.6,95.1 736.4,96.5 732.2,94.3 728.0,92.0 723.8,88.1 719.7,93.7 715.5,95.0 711.3,91.6 707.1,85.5 702.9,86.3 698.7,91.9 694.6,75.5 690.4,69.1 686.2,81.0 682.0,81.5 677.8,87.5 673.6,92.9 669.5,88.1 665.3,96.1 661.1,97.4 656.9,95.5 652.7,89.2 648.5,92.7 644.4,95.0 640.2,94.9 636.0,95.1 631.8,95.3 627.6,92.1 623.4,89.8 619.2,95.9 615.1,95.4 610.9,95.0 606.7,88.7 602.5,64.1 598.3,62.0 594.1,40.6 590.0,49.6 585.8,66.6 581.6,75.8 577.4,84.3 573.2,80.7 569.0,74.8 564.9,66.8 560.7,72.7 556.5,89.8 552.3,92.4 548.1,88.0 543.9,87.6 539.7,83.2 535.6,92.8 531.4,90.3 527.2,76.2 523.0,82.9 518.8,90.2 514.6,88.8 510.5,90.8 506.3,86.0 502.1,74.9 497.9,27.0 493.7,45.3 489.5,43.9 485.4,51.7 481.2,15.2 477.0,13.1 472.8,24.8 468.6,18.3 464.4,30.6 460.3,13.2 456.1,21.6 451.9,14.9 447.7,17.0 443.5,6.4 439.3,5.7 435.1,5.0 431.0,5.5 426.8,6.5 422.6,5.9 418.4,4.8 414.2,4.8 410.0,5.3 405.9,5.9 401.7,4.4 397.5,4.6 393.3,5.8 389.1,6.4 384.9,6.7 380.8,3.5 376.6,3.5 372.4,3.7 368.2,4.1 364.0,8.0 359.8,9.6 355.6,7.8 351.5,8.9 347.3,12.0 343.1,10.6 338.9,9.6 334.7,11.0 330.5,14.6 326.4,22.3 322.2,6.1 318.0,6.9 313.8,7.2 309.6,12.6 305.4,19.9 301.3,25.6 297.1,33.9 292.9,75.4 288.7,90.3 284.5,90.3 280.3,89.6 276.2,92.4 272.0,91.9 267.8,93.3 263.6,89.8 259.4,86.7 255.2,86.3 251.0,86.4 246.9,91.2 242.7,74.7 238.5,78.7 234.3,80.4 230.1,70.5 225.9,82.1 221.8,69.5 217.6,83.6 213.4,78.4 209.2,78.6 205.0,77.2 200.8,85.9 196.7,82.8 192.5,13.9 188.3,9.9 184.1,11.8 179.9,15.2 175.7,22.7 171.5,26.9 167.4,5.7 163.2,5.1 159.0,8.3 154.8,71.0 150.6,82.2 146.4,80.0 142.3,82.1 138.1,88.9 133.9,88.6 129.7,92.3 125.5,88.8 121.3,80.9 117.2,64.3 113.0,70.7 108.8,79.5 104.6,86.1 100.4,64.3 96.2,35.1 92.1,37.6 87.9,76.9 83.7,60.0 79.5,66.1 75.3,60.4 71.1,63.9 66.9,72.7 62.8,80.1 58.6,7.2 54.4,47.2 50.2,46.5 46.0,43.9 41.8,50.5 37.7,61.7 33.5,77.2 29.3,6.9 25.1,6.0 20.9,5.7 16.7,6.3 12.6,5.3 8.4,6.1 4.2,6.9 0.0,7.9" style="fill:var(--c-inscription)"/><polygon points="0.0,0.0 4.2,0.0 8.4,-0.0 12.6,0.0 16.7,0.0 20.9,0.0 25.1,0.0 29.3,0.0 33.5,0.0 37.7,0.0 41.8,0.0 46.0,-0.0 50.2,0.0 54.4,0.0 58.6,0.0 62.8,0.0 66.9,0.0 71.1,0.0 75.3,0.0 79.5,0.0 83.7,0.0 87.9,0.0 92.1,0.0 96.2,0.0 100.4,0.0 104.6,0.0 108.8,0.0 113.0,0.0 117.2,0.0 121.3,0.0 125.5,0.0 129.7,1.8 133.9,0.0 138.1,0.0 142.3,0.0 146.4,0.0 150.6,0.0 154.8,0.0 159.0,0.0 163.2,0.0 167.4,0.0 171.5,0.0 175.7,0.0 179.9,0.0 184.1,0.0 188.3,0.0 192.5,0.0 196.7,0.1 200.8,0.0 205.0,0.0 209.2,0.0 213.4,0.0 217.6,0.0 221.8,0.2 225.9,0.0 230.1,0.1 234.3,0.0 238.5,0.0 242.7,0.0 246.9,0.0 251.0,0.0 255.2,0.0 259.4,0.0 263.6,0.0 267.8,1.3 272.0,0.0 276.2,0.0 280.3,0.0 284.5,0.0 288.7,0.0 292.9,0.0 297.1,0.0 301.3,0.0 305.4,0.0 309.6,0.0 313.8,0.0 318.0,0.0 322.2,0.0 326.4,0.6 330.5,0.0 334.7,0.0 338.9,0.0 343.1,0.0 347.3,0.0 351.5,0.0 355.6,0.0 359.8,0.0 364.0,0.3 368.2,0.0 372.4,0.2 376.6,0.0 380.8,0.0 384.9,0.0 389.1,0.0 393.3,0.0 397.5,0.0 401.7,0.0 405.9,0.0 410.0,0.0 414.2,0.0 418.4,0.0 422.6,0.0 426.8,0.0 431.0,0.0 435.1,0.0 439.3,0.0 443.5,0.1 447.7,0.0 451.9,0.0 456.1,0.0 460.3,0.0 464.4,0.0 468.6,0.0 472.8,0.0 477.0,0.0 481.2,0.0 485.4,0.0 489.5,0.0 493.7,0.0 497.9,0.0 502.1,0.5 506.3,0.0 510.5,0.0 514.6,0.0 518.8,0.0 523.0,0.0 527.2,0.0 531.4,0.0 535.6,0.0 539.7,0.0 543.9,0.0 548.1,0.0 552.3,0.0 556.5,0.0 560.7,0.0 564.9,0.0 569.0,0.0 573.2,0.0 577.4,0.0 581.6,0.0 585.8,0.0 590.0,0.0 594.1,0.1 598.3,0.0 602.5,0.0 606.7,0.0 610.9,0.6 615.1,0.0 619.2,0.0 623.4,0.0 627.6,0.0 631.8,0.0 636.0,0.0 640.2,0.0 644.4,0.0 648.5,0.0 652.7,0.0 656.9,0.0 661.1,0.0 665.3,0.0 669.5,0.0 673.6,0.0 677.8,0.0 682.0,0.0 686.2,0.0 690.4,0.0 694.6,0.2 698.7,0.0 702.9,0.0 707.1,0.0 711.3,0.0 715.5,0.0 719.7,0.0 723.8,0.0 728.0,0.0 732.2,0.0 736.4,0.0 740.6,0.0 744.8,0.0 749.0,0.0 753.1,0.0 757.3,0.0 761.5,0.0 765.7,0.0 769.9,0.0 774.1,0.0 778.2,0.0 782.4,0.0 786.6,0.0 790.8,0.0 795.0,0.0 799.2,0.0 803.3,0.0 807.5,0.0 811.7,0.0 815.9,0.0 820.1,0.0 824.3,0.0 828.5,0.0 832.6,0.0 836.8,0.0 841.0,0.0 845.2,0.0 849.4,0.0 853.6,0.0 857.7,0.0 861.9,0.0 866.1,0.0 870.3,0.0 874.5,0.0 878.7,0.0 882.8,0.0 887.0,0.0 891.2,0.0 895.4,0.0 899.6,0.0 903.8,0.0 907.9,0.0 912.1,0.0 916.3,0.0 920.5,0.0 924.7,0.0 928.9,0.0 933.1,0.0 937.2,0.0 941.4,0.0 945.6,0.0 949.8,0.0 954.0,0.0 958.2,0.0 962.3,0.0 966.5,0.0 970.7,0.0 974.9,0.0 979.1,0.0 983.3,0.0 987.4,0.0 991.6,0.0 995.8,0.0 1000.0,0.0 1000.0,56.8 995.8,54.2 991.6,58.3 987.4,71.0 983.3,69.4 979.1,77.7 974.9,82.9 970.7,84.6 966.5,91.6 962.3,80.7 958.2,82.4 954.0,92.2 949.8,80.9 945.6,88.2 941.4,83.1 937.2,53.8 933.1,5.7 928.9,7.6 924.7,8.3 920.5,11.3 916.3,12.1 912.1,12.7 907.9,10.5 903.8,11.2 899.6,26.0 895.4,56.8 891.2,65.4 887.0,59.1 882.8,65.9 878.7,75.5 874.5,87.9 870.3,76.6 866.1,40.8 861.9,45.1 857.7,49.8 853.6,73.0 849.4,85.0 845.2,84.8 841.0,83.4 836.8,81.7 832.6,92.6 828.5,88.4 824.3,85.9 820.1,90.9 815.9,91.4 811.7,88.8 807.5,37.5 803.3,65.5 799.2,85.3 795.0,82.7 790.8,73.5 786.6,79.7 782.4,86.5 778.2,93.7 774.1,91.2 769.9,88.2 765.7,93.2 761.5,88.9 757.3,86.2 753.1,92.7 749.0,82.0 744.8,89.5 740.6,94.9 736.4,96.4 732.2,94.2 728.0,92.0 723.8,88.0 719.7,93.5 715.5,94.6 711.3,91.3 707.1,85.2 702.9,86.1 698.7,91.5 694.6,75.2 690.4,69.0 686.2,81.0 682.0,81.5 677.8,87.4 673.6,92.9 669.5,88.0 665.3,96.1 661.1,97.4 656.9,95.5 652.7,89.2 648.5,92.7 644.4,95.0 640.2,94.9 636.0,95.1 631.8,95.3 627.6,92.0 623.4,89.8 619.2,95.9 615.1,95.4 610.9,94.9 606.7,88.7 602.5,64.0 598.3,61.9 594.1,40.5 590.0,49.5 585.8,66.4 581.6,75.6 577.4,84.2 573.2,80.6 569.0,74.7 564.9,66.7 560.7,72.7 556.5,89.8 552.3,92.3 548.1,88.0 543.9,87.5 539.7,83.1 535.6,92.7 531.4,90.2 527.2,76.1 523.0,82.8 518.8,90.1 514.6,88.7 510.5,90.7 506.3,85.9 502.1,74.6 497.9,26.8 493.7,45.0 489.5,43.5 485.4,51.2 481.2,15.0 477.0,12.9 472.8,24.6 468.6,18.1 464.4,29.9 460.3,12.8 456.1,20.6 451.9,14.3 447.7,16.1 443.5,5.3 439.3,5.3 435.1,4.8 431.0,5.3 426.8,6.2 422.6,5.6 418.4,4.6 414.2,4.7 410.0,5.1 405.9,5.6 401.7,4.2 397.5,4.3 393.3,5.3 389.1,5.8 384.9,5.6 380.8,3.1 376.6,3.3 372.4,3.5 368.2,3.8 364.0,7.9 359.8,9.4 355.6,7.7 351.5,8.8 347.3,11.6 343.1,10.3 338.9,9.2 334.7,10.5 330.5,13.9 326.4,21.3 322.2,5.8 318.0,6.2 313.8,7.0 309.6,12.4 305.4,19.8 301.3,25.4 297.1,33.8 292.9,75.3 288.7,90.1 284.5,90.2 280.3,89.5 276.2,92.3 272.0,91.8 267.8,93.2 263.6,89.7 259.4,86.6 255.2,86.2 251.0,86.2 246.9,91.0 242.7,74.6 238.5,78.5 234.3,80.2 230.1,70.4 225.9,82.0 221.8,69.3 217.6,83.5 213.4,78.1 209.2,78.2 205.0,76.9 200.8,85.6 196.7,82.4 192.5,13.3 188.3,9.7 184.1,11.6 179.9,14.9 175.7,22.2 171.5,26.5 167.4,5.6 163.2,5.0 159.0,8.3 154.8,70.9 150.6,82.2 146.4,79.9 142.3,82.0 138.1,88.8 133.9,88.5 129.7,92.1 125.5,88.7 121.3,80.8 117.2,64.1 113.0,70.6 108.8,79.4 104.6,86.0 100.4,64.1 96.2,34.9 92.1,37.4 87.9,76.8 83.7,59.5 79.5,65.6 75.3,59.3 71.1,63.1 66.9,72.2 62.8,79.8 58.6,7.0 54.4,47.0 50.2,46.3 46.0,43.7 41.8,50.3 37.7,61.5 33.5,77.0 29.3,6.5 25.1,5.7 20.9,5.5 16.7,5.9 12.6,5.0 8.4,5.6 4.2,6.1 0.0,6.3" style="fill:var(--c-data)"/><polygon points="0.0,0.0 4.2,0.0 8.4,-0.0 12.6,0.0 16.7,0.0 20.9,0.0 25.1,0.0 29.3,0.0 33.5,0.0 37.7,0.0 41.8,0.0 46.0,-0.0 50.2,0.0 54.4,0.0 58.6,0.0 62.8,0.0 66.9,-0.0 71.1,0.0 75.3,0.0 79.5,0.0 83.7,0.0 87.9,0.0 92.1,0.0 96.2,0.0 100.4,0.0 104.6,0.0 108.8,0.0 113.0,0.0 117.2,0.0 121.3,0.0 125.5,0.0 129.7,0.0 133.9,0.0 138.1,0.0 142.3,0.0 146.4,0.0 150.6,0.0 154.8,0.0 159.0,-0.0 163.2,0.0 167.4,0.0 171.5,0.0 175.7,0.0 179.9,0.0 184.1,0.0 188.3,0.0 192.5,0.0 196.7,0.0 200.8,0.0 205.0,0.0 209.2,0.0 213.4,0.0 217.6,0.0 221.8,0.0 225.9,0.0 230.1,0.0 234.3,0.0 238.5,0.0 242.7,0.0 246.9,0.0 251.0,0.0 255.2,0.0 259.4,0.0 263.6,0.0 267.8,0.0 272.0,0.0 276.2,0.0 280.3,0.0 284.5,0.0 288.7,0.0 292.9,0.0 297.1,0.0 301.3,0.0 305.4,-0.0 309.6,0.0 313.8,0.0 318.0,0.0 322.2,0.0 326.4,0.0 330.5,0.0 334.7,0.0 338.9,0.0 343.1,0.0 347.3,0.0 351.5,0.0 355.6,0.0 359.8,0.0 364.0,0.0 368.2,0.0 372.4,0.0 376.6,0.0 380.8,0.0 384.9,0.0 389.1,0.0 393.3,0.0 397.5,0.0 401.7,0.0 405.9,0.0 410.0,0.0 414.2,0.0 418.4,0.0 422.6,0.0 426.8,0.0 431.0,0.0 435.1,0.0 439.3,0.0 443.5,-0.0 447.7,0.0 451.9,0.0 456.1,0.0 460.3,0.0 464.4,0.0 468.6,0.0 472.8,0.0 477.0,0.0 481.2,0.0 485.4,0.0 489.5,0.0 493.7,0.0 497.9,0.0 502.1,0.0 506.3,0.0 510.5,0.0 514.6,0.0 518.8,0.0 523.0,0.0 527.2,0.0 531.4,0.0 535.6,0.0 539.7,0.0 543.9,0.0 548.1,0.0 552.3,0.0 556.5,0.0 560.7,0.0 564.9,0.0 569.0,0.0 573.2,0.0 577.4,0.0 581.6,0.0 585.8,0.0 590.0,0.0 594.1,0.0 598.3,0.0 602.5,0.0 606.7,-0.0 610.9,0.0 615.1,0.0 619.2,0.0 623.4,0.0 627.6,0.0 631.8,0.0 636.0,0.0 640.2,0.0 644.4,0.0 648.5,0.0 652.7,0.0 656.9,0.0 661.1,0.0 665.3,0.0 669.5,0.0 673.6,0.0 677.8,0.0 682.0,0.0 686.2,0.0 690.4,0.0 694.6,0.0 698.7,0.0 702.9,0.0 707.1,0.0 711.3,0.0 715.5,0.0 719.7,0.0 723.8,0.0 728.0,0.0 732.2,0.0 736.4,0.0 740.6,0.0 744.8,0.0 749.0,0.0 753.1,0.0 757.3,0.0 761.5,0.0 765.7,0.0 769.9,0.0 774.1,0.0 778.2,0.0 782.4,0.0 786.6,0.0 790.8,0.0 795.0,0.0 799.2,0.0 803.3,0.0 807.5,0.0 811.7,0.0 815.9,0.0 820.1,0.0 824.3,0.0 828.5,0.0 832.6,0.0 836.8,0.0 841.0,0.0 845.2,0.0 849.4,0.0 853.6,0.0 857.7,0.0 861.9,0.0 866.1,0.0 870.3,0.0 874.5,0.0 878.7,0.0 882.8,0.0 887.0,0.0 891.2,0.0 895.4,0.0 899.6,0.0 903.8,0.0 907.9,0.0 912.1,0.0 916.3,0.0 920.5,0.0 924.7,0.0 928.9,0.0 933.1,0.0 937.2,0.0 941.4,-0.0 945.6,0.0 949.8,0.0 954.0,0.0 958.2,0.0 962.3,0.0 966.5,0.0 970.7,0.0 974.9,0.0 979.1,0.0 983.3,0.0 987.4,0.0 991.6,0.0 995.8,0.0 1000.0,0.0 1000.0,0.0 995.8,0.0 991.6,0.0 987.4,0.0 983.3,0.0 979.1,0.0 974.9,0.0 970.7,0.0 966.5,0.0 962.3,0.0 958.2,0.0 954.0,0.0 949.8,0.0 945.6,0.0 941.4,0.0 937.2,0.0 933.1,0.0 928.9,0.0 924.7,0.0 920.5,0.0 916.3,0.0 912.1,0.0 907.9,0.0 903.8,0.0 899.6,0.0 895.4,0.0 891.2,0.0 887.0,0.0 882.8,0.0 878.7,0.0 874.5,0.0 870.3,0.0 866.1,0.0 861.9,0.0 857.7,0.0 853.6,0.0 849.4,0.0 845.2,0.0 841.0,0.0 836.8,0.0 832.6,0.0 828.5,0.0 824.3,0.0 820.1,0.0 815.9,0.0 811.7,0.0 807.5,0.0 803.3,0.0 799.2,0.0 795.0,0.0 790.8,0.0 786.6,0.0 782.4,0.0 778.2,0.0 774.1,0.0 769.9,0.0 765.7,0.0 761.5,0.0 757.3,0.0 753.1,0.0 749.0,0.0 744.8,0.0 740.6,0.0 736.4,0.0 732.2,0.0 728.0,0.0 723.8,0.0 719.7,0.0 715.5,0.0 711.3,0.0 707.1,0.0 702.9,0.0 698.7,0.0 694.6,0.2 690.4,0.0 686.2,0.0 682.0,0.0 677.8,0.0 673.6,0.0 669.5,0.0 665.3,0.0 661.1,0.0 656.9,0.0 652.7,0.0 648.5,0.0 644.4,0.0 640.2,0.0 636.0,0.0 631.8,0.0 627.6,0.0 623.4,0.0 619.2,0.0 615.1,0.0 610.9,0.6 606.7,0.0 602.5,0.0 598.3,0.0 594.1,0.1 590.0,0.0 585.8,0.0 581.6,0.0 577.4,0.0 573.2,0.0 569.0,0.0 564.9,0.0 560.7,0.0 556.5,0.0 552.3,0.0 548.1,0.0 543.9,0.0 539.7,0.0 535.6,0.0 531.4,0.0 527.2,0.0 523.0,0.0 518.8,0.0 514.6,0.0 510.5,0.0 506.3,0.0 502.1,0.5 497.9,0.0 493.7,0.0 489.5,0.0 485.4,0.0 481.2,0.0 477.0,0.0 472.8,0.0 468.6,0.0 464.4,0.0 460.3,0.0 456.1,0.0 451.9,0.0 447.7,0.0 443.5,0.1 439.3,0.0 435.1,0.0 431.0,0.0 426.8,0.0 422.6,0.0 418.4,0.0 414.2,0.0 410.0,0.0 405.9,0.0 401.7,0.0 397.5,0.0 393.3,0.0 389.1,0.0 384.9,0.0 380.8,0.0 376.6,0.0 372.4,0.2 368.2,0.0 364.0,0.3 359.8,0.0 355.6,0.0 351.5,0.0 347.3,0.0 343.1,0.0 338.9,0.0 334.7,0.0 330.5,0.0 326.4,0.6 322.2,0.0 318.0,0.0 313.8,0.0 309.6,0.0 305.4,0.0 301.3,0.0 297.1,0.0 292.9,0.0 288.7,0.0 284.5,0.0 280.3,0.0 276.2,0.0 272.0,0.0 267.8,1.3 263.6,0.0 259.4,0.0 255.2,0.0 251.0,0.0 246.9,0.0 242.7,0.0 238.5,0.0 234.3,0.0 230.1,0.1 225.9,0.0 221.8,0.2 217.6,0.0 213.4,0.0 209.2,0.0 205.0,0.0 200.8,0.0 196.7,0.1 192.5,0.0 188.3,0.0 184.1,0.0 179.9,0.0 175.7,0.0 171.5,0.0 167.4,0.0 163.2,0.0 159.0,0.0 154.8,0.0 150.6,0.0 146.4,0.0 142.3,0.0 138.1,0.0 133.9,0.0 129.7,1.8 125.5,0.0 121.3,0.0 117.2,0.0 113.0,0.0 108.8,0.0 104.6,0.0 100.4,0.0 96.2,0.0 92.1,0.0 87.9,0.0 83.7,0.0 79.5,0.0 75.3,0.0 71.1,0.0 66.9,0.0 62.8,0.0 58.6,0.0 54.4,0.0 50.2,0.0 46.0,-0.0 41.8,0.0 37.7,0.0 33.5,0.0 29.3,0.0 25.1,0.0 20.9,0.0 16.7,0.0 12.6,0.0 8.4,-0.0 4.2,0.0 0.0,0.0" style="fill:var(--c-other)"/></svg>
+      <div class="k sub">Pending value</div>
+      <p class="big">6,615 <small>BTC waiting</small></p>
+    </div>
+  </section>
+</div>
+
+<section>
+  <div class="sec-h"><h2>Climate</h2><p>Last 41 hours, sampled every 30 s on the node.</p></div>
+  <div class="climate">
+        <div class="clim">
+          <div class="k">Next-block fee <span class="mute">sat/vB</span></div>
+          <svg class="chart" viewBox="0 0 300 64" preserveAspectRatio="none" role="img" aria-label="24 hour trend"><polygon points="0,64 0.0,14.0 1.3,14.0 2.5,14.0 3.8,14.0 5.0,14.0 6.3,14.0 7.5,14.0 8.8,14.0 10.0,14.0 11.3,14.0 12.6,14.0 13.8,14.0 15.1,14.0 16.3,14.0 17.6,14.0 18.8,14.0 20.1,14.0 21.3,14.0 22.6,14.0 23.8,14.0 25.1,14.0 26.4,14.0 27.6,14.0 28.9,14.0 30.1,14.0 31.4,14.0 32.6,14.0 33.9,14.0 35.1,14.1 36.4,14.9 37.7,14.9 38.9,14.9 40.2,14.9 41.4,14.9 42.7,14.9 43.9,15.7 45.2,17.3 46.4,17.3 47.7,17.3 49.0,15.7 50.2,14.9 51.5,15.5 52.7,17.3 54.0,17.3 55.2,17.3 56.5,17.3 57.7,15.7 59.0,14.9 60.3,14.9 61.5,14.9 62.8,14.9 64.0,19.5 65.3,24.0 66.5,24.0 67.8,24.0 69.0,24.0 70.3,24.0 71.5,24.6 72.8,25.1 74.1,25.1 75.3,25.1 76.6,25.1 77.8,25.5 79.1,25.7 80.3,25.7 81.6,25.7 82.8,25.7 84.1,25.7 85.4,25.7 86.6,25.7 87.9,25.7 89.1,25.7 90.4,25.7 91.6,25.7 92.9,18.5 94.1,14.9 95.4,14.9 96.7,14.9 97.9,14.9 99.2,14.9 100.4,14.9 101.7,14.9 102.9,14.9 104.2,10.4 105.4,4.0 106.7,4.0 107.9,4.0 109.2,5.1 110.5,6.8 111.7,7.9 113.0,7.7 114.2,7.4 115.5,7.9 116.7,7.9 118.0,8.7 119.2,8.8 120.5,8.8 121.8,8.8 123.0,8.8 124.3,8.8 125.5,8.8 126.8,8.8 128.0,8.8 129.3,8.8 130.5,8.7 131.8,8.7 133.1,8.7 134.3,8.7 135.6,8.7 136.8,8.7 138.1,8.7 139.3,8.7 140.6,8.9 141.8,9.3 143.1,9.3 144.4,9.3 145.6,9.3 146.9,9.3 148.1,9.3 149.4,9.3 150.6,9.3 151.9,9.3 153.1,10.7 154.4,14.0 155.6,14.0 156.9,14.0 158.2,14.0 159.4,14.0 160.7,14.0 161.9,14.0 163.2,14.0 164.4,14.0 165.7,14.0 166.9,14.0 168.2,14.0 169.5,15.4 170.7,25.1 172.0,25.1 173.2,25.2 174.5,26.8 175.7,26.8 177.0,26.8 178.2,26.7 179.5,25.7 180.8,26.1 182.0,26.8 183.3,26.8 184.5,26.8 185.8,26.8 187.0,26.8 188.3,26.8 189.5,26.8 190.8,26.8 192.1,26.8 193.3,26.8 194.6,26.8 195.8,26.8 197.1,47.6 198.3,60.0 199.6,60.0 200.8,60.0 202.1,60.0 203.3,60.0 204.6,60.0 205.9,60.0 207.1,60.0 208.4,60.0 209.6,60.0 210.9,60.0 212.1,60.0 213.4,60.0 214.6,60.0 215.9,60.0 217.2,60.0 218.4,60.0 219.7,60.0 220.9,59.9 222.2,59.4 223.4,60.0 224.7,60.0 225.9,60.0 227.2,60.0 228.5,60.0 229.7,60.0 231.0,60.0 232.2,60.0 233.5,60.0 234.7,60.0 236.0,60.0 237.2,60.0 238.5,60.0 239.7,59.1 241.0,59.0 242.3,59.0 243.5,59.0 244.8,59.6 246.0,60.0 247.3,60.0 248.5,60.0 249.8,60.0 251.0,60.0 252.3,60.0 253.6,59.8 254.8,59.1 256.1,59.1 257.3,59.1 258.6,59.1 259.8,59.1 261.1,59.1 262.3,59.1 263.6,59.1 264.9,59.1 266.1,59.1 267.4,59.1 268.6,59.1 269.9,59.1 271.1,59.1 272.4,24.2 273.6,16.4 274.9,16.4 276.2,16.4 277.4,16.4 278.7,16.4 279.9,16.9 281.2,17.2 282.4,17.2 283.7,24.3 284.9,25.1 286.2,25.1 287.4,25.1 288.7,25.4 290.0,25.7 291.2,25.7 292.5,25.7 293.7,25.7 295.0,25.7 296.2,25.7 297.5,25.7 298.7,25.7 300.0,25.7 300,64" style="fill:var(--r6);opacity:.14"/><polyline points="0.0,14.0 1.3,14.0 2.5,14.0 3.8,14.0 5.0,14.0 6.3,14.0 7.5,14.0 8.8,14.0 10.0,14.0 11.3,14.0 12.6,14.0 13.8,14.0 15.1,14.0 16.3,14.0 17.6,14.0 18.8,14.0 20.1,14.0 21.3,14.0 22.6,14.0 23.8,14.0 25.1,14.0 26.4,14.0 27.6,14.0 28.9,14.0 30.1,14.0 31.4,14.0 32.6,14.0 33.9,14.0 35.1,14.1 36.4,14.9 37.7,14.9 38.9,14.9 40.2,14.9 41.4,14.9 42.7,14.9 43.9,15.7 45.2,17.3 46.4,17.3 47.7,17.3 49.0,15.7 50.2,14.9 51.5,15.5 52.7,17.3 54.0,17.3 55.2,17.3 56.5,17.3 57.7,15.7 59.0,14.9 60.3,14.9 61.5,14.9 62.8,14.9 64.0,19.5 65.3,24.0 66.5,24.0 67.8,24.0 69.0,24.0 70.3,24.0 71.5,24.6 72.8,25.1 74.1,25.1 75.3,25.1 76.6,25.1 77.8,25.5 79.1,25.7 80.3,25.7 81.6,25.7 82.8,25.7 84.1,25.7 85.4,25.7 86.6,25.7 87.9,25.7 89.1,25.7 90.4,25.7 91.6,25.7 92.9,18.5 94.1,14.9 95.4,14.9 96.7,14.9 97.9,14.9 99.2,14.9 100.4,14.9 101.7,14.9 102.9,14.9 104.2,10.4 105.4,4.0 106.7,4.0 107.9,4.0 109.2,5.1 110.5,6.8 111.7,7.9 113.0,7.7 114.2,7.4 115.5,7.9 116.7,7.9 118.0,8.7 119.2,8.8 120.5,8.8 121.8,8.8 123.0,8.8 124.3,8.8 125.5,8.8 126.8,8.8 128.0,8.8 129.3,8.8 130.5,8.7 131.8,8.7 133.1,8.7 134.3,8.7 135.6,8.7 136.8,8.7 138.1,8.7 139.3,8.7 140.6,8.9 141.8,9.3 143.1,9.3 144.4,9.3 145.6,9.3 146.9,9.3 148.1,9.3 149.4,9.3 150.6,9.3 151.9,9.3 153.1,10.7 154.4,14.0 155.6,14.0 156.9,14.0 158.2,14.0 159.4,14.0 160.7,14.0 161.9,14.0 163.2,14.0 164.4,14.0 165.7,14.0 166.9,14.0 168.2,14.0 169.5,15.4 170.7,25.1 172.0,25.1 173.2,25.2 174.5,26.8 175.7,26.8 177.0,26.8 178.2,26.7 179.5,25.7 180.8,26.1 182.0,26.8 183.3,26.8 184.5,26.8 185.8,26.8 187.0,26.8 188.3,26.8 189.5,26.8 190.8,26.8 192.1,26.8 193.3,26.8 194.6,26.8 195.8,26.8 197.1,47.6 198.3,60.0 199.6,60.0 200.8,60.0 202.1,60.0 203.3,60.0 204.6,60.0 205.9,60.0 207.1,60.0 208.4,60.0 209.6,60.0 210.9,60.0 212.1,60.0 213.4,60.0 214.6,60.0 215.9,60.0 217.2,60.0 218.4,60.0 219.7,60.0 220.9,59.9 222.2,59.4 223.4,60.0 224.7,60.0 225.9,60.0 227.2,60.0 228.5,60.0 229.7,60.0 231.0,60.0 232.2,60.0 233.5,60.0 234.7,60.0 236.0,60.0 237.2,60.0 238.5,60.0 239.7,59.1 241.0,59.0 242.3,59.0 243.5,59.0 244.8,59.6 246.0,60.0 247.3,60.0 248.5,60.0 249.8,60.0 251.0,60.0 252.3,60.0 253.6,59.8 254.8,59.1 256.1,59.1 257.3,59.1 258.6,59.1 259.8,59.1 261.1,59.1 262.3,59.1 263.6,59.1 264.9,59.1 266.1,59.1 267.4,59.1 268.6,59.1 269.9,59.1 271.1,59.1 272.4,24.2 273.6,16.4 274.9,16.4 276.2,16.4 277.4,16.4 278.7,16.4 279.9,16.9 281.2,17.2 282.4,17.2 283.7,24.3 284.9,25.1 286.2,25.1 287.4,25.1 288.7,25.4 290.0,25.7 291.2,25.7 292.5,25.7 293.7,25.7 295.0,25.7 296.2,25.7 297.5,25.7 298.7,25.7 300.0,25.7" style="stroke:var(--r6)" class="line" vector-effect="non-scaling-stroke"/></svg><div class="chart-axis"><span>min 0.12</span><span>max 4.2</span></div>
+        </div>
+        <div class="clim">
+          <div class="k">Mempool size <span class="mute">vMB</span></div>
+          <svg class="chart" viewBox="0 0 300 64" preserveAspectRatio="none" role="img" aria-label="24 hour trend"><polygon points="0,64 0.0,44.0 1.3,40.4 2.5,37.3 3.8,38.3 5.0,45.4 6.3,43.7 7.5,46.0 8.8,48.7 10.0,50.4 11.3,47.1 12.6,44.4 13.8,42.4 15.1,43.0 16.3,42.7 17.6,41.8 18.8,50.7 20.1,47.0 21.3,44.9 22.6,43.2 23.8,44.7 25.1,43.1 26.4,48.8 27.6,44.8 28.9,44.5 30.1,48.9 31.4,51.5 32.6,45.8 33.9,41.1 35.1,36.6 36.4,39.0 37.7,48.5 38.9,51.9 40.2,48.3 41.4,47.5 42.7,44.4 43.9,42.0 45.2,40.4 46.4,38.0 47.7,36.0 49.0,37.2 50.2,39.8 51.5,47.4 52.7,47.4 54.0,44.1 55.2,41.2 56.5,37.1 57.7,41.3 59.0,48.6 60.3,46.0 61.5,44.1 62.8,44.4 64.0,44.1 65.3,45.9 66.5,46.7 67.8,46.2 69.0,44.1 70.3,45.7 71.5,45.3 72.8,44.9 74.1,49.0 75.3,46.2 76.6,47.2 77.8,48.4 79.1,46.4 80.3,50.7 81.6,46.0 82.8,45.8 84.1,43.5 85.4,46.3 86.6,46.4 87.9,43.0 89.1,38.0 90.4,34.0 91.6,30.2 92.9,33.7 94.1,34.9 95.4,42.1 96.7,41.9 97.9,38.9 99.2,26.1 100.4,20.2 101.7,16.5 102.9,12.0 104.2,15.3 105.4,19.3 106.7,14.8 107.9,16.2 109.2,15.1 110.5,20.3 111.7,17.9 113.0,11.5 114.2,12.0 115.5,19.5 116.7,19.2 118.0,17.4 119.2,8.8 120.5,4.0 121.8,6.9 123.0,6.9 124.3,8.2 125.5,6.0 126.8,9.3 128.0,15.0 129.3,14.1 130.5,16.5 131.8,17.4 133.1,22.2 134.3,30.5 135.6,30.6 136.8,32.4 138.1,29.6 139.3,33.9 140.6,30.5 141.8,34.9 143.1,30.9 144.4,32.0 145.6,41.2 146.9,43.6 148.1,46.8 149.4,43.5 150.6,48.6 151.9,47.2 153.1,50.7 154.4,45.7 155.6,48.0 156.9,42.4 158.2,40.4 159.4,49.0 160.7,46.5 161.9,43.6 163.2,45.2 164.4,45.1 165.7,47.1 166.9,47.0 168.2,43.4 169.5,42.2 170.7,43.3 172.0,45.3 173.2,45.7 174.5,46.6 175.7,47.1 177.0,44.2 178.2,42.3 179.5,46.7 180.8,48.7 182.0,53.1 183.3,51.5 184.5,51.1 185.8,48.2 187.0,44.6 188.3,47.2 189.5,47.8 190.8,47.6 192.1,52.6 193.3,47.6 194.6,46.1 195.8,46.3 197.1,47.6 198.3,49.6 199.6,48.9 200.8,45.0 202.1,46.3 203.3,44.4 204.6,42.3 205.9,43.4 207.1,43.1 208.4,47.1 209.6,48.5 210.9,43.4 212.1,42.5 213.4,44.0 214.6,49.2 215.9,44.3 217.2,42.0 218.4,43.1 219.7,43.5 220.9,45.4 222.2,47.5 223.4,44.2 224.7,41.5 225.9,44.8 227.2,41.4 228.5,41.0 229.7,44.1 231.0,44.2 232.2,43.2 233.5,44.4 234.7,40.3 236.0,37.4 237.2,35.7 238.5,37.5 239.7,39.4 241.0,40.3 242.3,41.2 243.5,42.5 244.8,44.4 246.0,43.7 247.3,38.7 248.5,40.0 249.8,44.2 251.0,40.2 252.3,40.5 253.6,41.0 254.8,41.5 256.1,37.6 257.3,30.6 258.6,37.7 259.8,38.0 261.1,43.1 262.3,44.3 263.6,41.1 264.9,38.1 266.1,35.2 267.4,35.6 268.6,33.4 269.9,30.7 271.1,28.5 272.4,29.5 273.6,34.4 274.9,34.3 276.2,36.1 277.4,35.9 278.7,34.8 279.9,44.1 281.2,54.0 282.4,60.0 283.7,59.4 284.9,53.6 286.2,57.8 287.4,54.3 288.7,55.5 290.0,57.2 291.2,55.2 292.5,55.4 293.7,54.2 295.0,51.2 296.2,53.8 297.5,55.6 298.7,58.8 300.0,57.1 300,64" style="fill:var(--accent);opacity:.14"/><polyline points="0.0,44.0 1.3,40.4 2.5,37.3 3.8,38.3 5.0,45.4 6.3,43.7 7.5,46.0 8.8,48.7 10.0,50.4 11.3,47.1 12.6,44.4 13.8,42.4 15.1,43.0 16.3,42.7 17.6,41.8 18.8,50.7 20.1,47.0 21.3,44.9 22.6,43.2 23.8,44.7 25.1,43.1 26.4,48.8 27.6,44.8 28.9,44.5 30.1,48.9 31.4,51.5 32.6,45.8 33.9,41.1 35.1,36.6 36.4,39.0 37.7,48.5 38.9,51.9 40.2,48.3 41.4,47.5 42.7,44.4 43.9,42.0 45.2,40.4 46.4,38.0 47.7,36.0 49.0,37.2 50.2,39.8 51.5,47.4 52.7,47.4 54.0,44.1 55.2,41.2 56.5,37.1 57.7,41.3 59.0,48.6 60.3,46.0 61.5,44.1 62.8,44.4 64.0,44.1 65.3,45.9 66.5,46.7 67.8,46.2 69.0,44.1 70.3,45.7 71.5,45.3 72.8,44.9 74.1,49.0 75.3,46.2 76.6,47.2 77.8,48.4 79.1,46.4 80.3,50.7 81.6,46.0 82.8,45.8 84.1,43.5 85.4,46.3 86.6,46.4 87.9,43.0 89.1,38.0 90.4,34.0 91.6,30.2 92.9,33.7 94.1,34.9 95.4,42.1 96.7,41.9 97.9,38.9 99.2,26.1 100.4,20.2 101.7,16.5 102.9,12.0 104.2,15.3 105.4,19.3 106.7,14.8 107.9,16.2 109.2,15.1 110.5,20.3 111.7,17.9 113.0,11.5 114.2,12.0 115.5,19.5 116.7,19.2 118.0,17.4 119.2,8.8 120.5,4.0 121.8,6.9 123.0,6.9 124.3,8.2 125.5,6.0 126.8,9.3 128.0,15.0 129.3,14.1 130.5,16.5 131.8,17.4 133.1,22.2 134.3,30.5 135.6,30.6 136.8,32.4 138.1,29.6 139.3,33.9 140.6,30.5 141.8,34.9 143.1,30.9 144.4,32.0 145.6,41.2 146.9,43.6 148.1,46.8 149.4,43.5 150.6,48.6 151.9,47.2 153.1,50.7 154.4,45.7 155.6,48.0 156.9,42.4 158.2,40.4 159.4,49.0 160.7,46.5 161.9,43.6 163.2,45.2 164.4,45.1 165.7,47.1 166.9,47.0 168.2,43.4 169.5,42.2 170.7,43.3 172.0,45.3 173.2,45.7 174.5,46.6 175.7,47.1 177.0,44.2 178.2,42.3 179.5,46.7 180.8,48.7 182.0,53.1 183.3,51.5 184.5,51.1 185.8,48.2 187.0,44.6 188.3,47.2 189.5,47.8 190.8,47.6 192.1,52.6 193.3,47.6 194.6,46.1 195.8,46.3 197.1,47.6 198.3,49.6 199.6,48.9 200.8,45.0 202.1,46.3 203.3,44.4 204.6,42.3 205.9,43.4 207.1,43.1 208.4,47.1 209.6,48.5 210.9,43.4 212.1,42.5 213.4,44.0 214.6,49.2 215.9,44.3 217.2,42.0 218.4,43.1 219.7,43.5 220.9,45.4 222.2,47.5 223.4,44.2 224.7,41.5 225.9,44.8 227.2,41.4 228.5,41.0 229.7,44.1 231.0,44.2 232.2,43.2 233.5,44.4 234.7,40.3 236.0,37.4 237.2,35.7 238.5,37.5 239.7,39.4 241.0,40.3 242.3,41.2 243.5,42.5 244.8,44.4 246.0,43.7 247.3,38.7 248.5,40.0 249.8,44.2 251.0,40.2 252.3,40.5 253.6,41.0 254.8,41.5 256.1,37.6 257.3,30.6 258.6,37.7 259.8,38.0 261.1,43.1 262.3,44.3 263.6,41.1 264.9,38.1 266.1,35.2 267.4,35.6 268.6,33.4 269.9,30.7 271.1,28.5 272.4,29.5 273.6,34.4 274.9,34.3 276.2,36.1 277.4,35.9 278.7,34.8 279.9,44.1 281.2,54.0 282.4,60.0 283.7,59.4 284.9,53.6 286.2,57.8 287.4,54.3 288.7,55.5 290.0,57.2 291.2,55.2 292.5,55.4 293.7,54.2 295.0,51.2 296.2,53.8 297.5,55.6 298.7,58.8 300.0,57.1" style="stroke:var(--accent)" class="line" vector-effect="non-scaling-stroke"/></svg><div class="chart-axis"><span>min 17.0</span><span>max 27.2</span></div>
+        </div>
+        <div class="clim">
+          <div class="k">Arrivals <span class="mute">tx/min</span></div>
+          <svg class="chart" viewBox="0 0 300 64" preserveAspectRatio="none" role="img" aria-label="24 hour trend"><polygon points="0,64 0.0,56.6 1.3,57.8 2.5,58.1 3.8,58.0 5.0,56.9 6.3,58.5 7.5,57.6 8.8,57.7 10.0,46.7 11.3,58.5 12.6,58.6 13.8,59.7 15.1,57.9 16.3,59.1 17.6,59.2 18.8,44.3 20.1,59.1 21.3,59.3 22.6,59.4 23.8,58.5 25.1,59.4 26.4,55.7 27.6,59.1 28.9,58.7 30.1,49.7 31.4,43.9 32.6,59.5 33.9,59.4 35.1,58.7 36.4,56.7 37.7,54.0 38.9,27.5 40.2,45.0 41.4,58.6 42.7,59.2 43.9,59.4 45.2,58.7 46.4,59.1 47.7,59.0 49.0,58.3 50.2,58.0 51.5,55.8 52.7,57.7 54.0,58.6 55.2,58.1 56.5,58.0 57.7,56.4 59.0,38.6 60.3,57.3 61.5,57.4 62.8,57.4 64.0,57.0 65.3,57.6 66.5,42.4 67.8,51.6 69.0,47.6 70.3,51.7 71.5,57.0 72.8,56.5 74.1,22.8 75.3,53.9 76.6,44.8 77.8,32.4 79.1,53.7 80.3,18.8 81.6,53.0 82.8,52.8 84.1,56.3 85.4,53.2 86.6,55.6 87.9,57.1 89.1,57.5 90.4,57.1 91.6,57.1 92.9,55.1 94.1,55.7 95.4,53.2 96.7,55.7 97.9,53.5 99.2,56.4 100.4,56.6 101.7,56.3 102.9,55.9 104.2,54.7 105.4,54.6 106.7,56.3 107.9,54.8 109.2,54.9 110.5,54.7 111.7,55.2 113.0,55.2 114.2,54.7 115.5,54.1 116.7,54.5 118.0,55.4 119.2,56.6 120.5,56.6 121.8,55.5 123.0,55.7 124.3,55.3 125.5,56.3 126.8,54.7 128.0,55.2 129.3,56.1 130.5,55.1 131.8,55.4 133.1,55.3 134.3,54.4 135.6,55.5 136.8,55.2 138.1,56.4 139.3,54.5 140.6,56.1 141.8,54.2 143.1,56.5 144.4,54.0 145.6,52.1 146.9,55.7 148.1,56.0 149.4,56.8 150.6,41.4 151.9,46.4 153.1,19.3 154.4,52.9 155.6,25.5 156.9,57.8 158.2,58.0 159.4,29.3 160.7,37.2 161.9,58.1 163.2,56.9 164.4,55.0 165.7,48.0 166.9,42.7 168.2,58.3 169.5,58.2 170.7,57.5 172.0,50.7 173.2,58.0 174.5,53.6 175.7,54.4 177.0,58.7 178.2,58.9 179.5,54.4 180.8,53.7 182.0,12.7 183.3,19.4 184.5,7.6 185.8,41.2 187.0,59.3 188.3,49.3 189.5,36.7 190.8,52.7 192.1,4.0 193.3,48.4 194.6,54.4 195.8,59.2 197.1,48.7 198.3,18.1 199.6,27.6 200.8,58.9 202.1,54.8 203.3,58.8 204.6,60.0 205.9,59.0 207.1,59.3 208.4,50.4 209.6,26.3 210.9,59.3 212.1,57.0 213.4,51.4 214.6,18.2 215.9,48.7 217.2,59.5 218.4,56.4 219.7,54.8 220.9,48.3 222.2,36.1 223.4,49.0 224.7,59.0 225.9,41.9 227.2,58.8 228.5,53.9 229.7,38.5 231.0,42.0 232.2,35.7 233.5,28.6 234.7,58.8 236.0,58.4 237.2,59.1 238.5,58.0 239.7,58.0 241.0,58.0 242.3,52.5 243.5,35.5 244.8,36.9 246.0,35.5 247.3,52.6 248.5,58.0 249.8,33.6 251.0,58.4 252.3,57.3 253.6,56.5 254.8,55.8 256.1,58.3 257.3,58.4 258.6,56.6 259.8,58.2 261.1,43.3 262.3,42.2 263.6,57.3 264.9,57.8 266.1,58.0 267.4,57.5 268.6,58.0 269.9,58.0 271.1,58.3 272.4,56.7 273.6,56.6 274.9,56.9 276.2,56.5 277.4,57.0 278.7,57.8 279.9,57.1 281.2,51.5 282.4,29.2 283.7,15.1 284.9,56.2 286.2,42.1 287.4,56.2 288.7,45.5 290.0,37.5 291.2,56.2 292.5,56.1 293.7,56.9 295.0,56.6 296.2,56.4 297.5,56.0 298.7,47.0 300.0,57.0 300,64" style="fill:var(--sky);opacity:.14"/><polyline points="0.0,56.6 1.3,57.8 2.5,58.1 3.8,58.0 5.0,56.9 6.3,58.5 7.5,57.6 8.8,57.7 10.0,46.7 11.3,58.5 12.6,58.6 13.8,59.7 15.1,57.9 16.3,59.1 17.6,59.2 18.8,44.3 20.1,59.1 21.3,59.3 22.6,59.4 23.8,58.5 25.1,59.4 26.4,55.7 27.6,59.1 28.9,58.7 30.1,49.7 31.4,43.9 32.6,59.5 33.9,59.4 35.1,58.7 36.4,56.7 37.7,54.0 38.9,27.5 40.2,45.0 41.4,58.6 42.7,59.2 43.9,59.4 45.2,58.7 46.4,59.1 47.7,59.0 49.0,58.3 50.2,58.0 51.5,55.8 52.7,57.7 54.0,58.6 55.2,58.1 56.5,58.0 57.7,56.4 59.0,38.6 60.3,57.3 61.5,57.4 62.8,57.4 64.0,57.0 65.3,57.6 66.5,42.4 67.8,51.6 69.0,47.6 70.3,51.7 71.5,57.0 72.8,56.5 74.1,22.8 75.3,53.9 76.6,44.8 77.8,32.4 79.1,53.7 80.3,18.8 81.6,53.0 82.8,52.8 84.1,56.3 85.4,53.2 86.6,55.6 87.9,57.1 89.1,57.5 90.4,57.1 91.6,57.1 92.9,55.1 94.1,55.7 95.4,53.2 96.7,55.7 97.9,53.5 99.2,56.4 100.4,56.6 101.7,56.3 102.9,55.9 104.2,54.7 105.4,54.6 106.7,56.3 107.9,54.8 109.2,54.9 110.5,54.7 111.7,55.2 113.0,55.2 114.2,54.7 115.5,54.1 116.7,54.5 118.0,55.4 119.2,56.6 120.5,56.6 121.8,55.5 123.0,55.7 124.3,55.3 125.5,56.3 126.8,54.7 128.0,55.2 129.3,56.1 130.5,55.1 131.8,55.4 133.1,55.3 134.3,54.4 135.6,55.5 136.8,55.2 138.1,56.4 139.3,54.5 140.6,56.1 141.8,54.2 143.1,56.5 144.4,54.0 145.6,52.1 146.9,55.7 148.1,56.0 149.4,56.8 150.6,41.4 151.9,46.4 153.1,19.3 154.4,52.9 155.6,25.5 156.9,57.8 158.2,58.0 159.4,29.3 160.7,37.2 161.9,58.1 163.2,56.9 164.4,55.0 165.7,48.0 166.9,42.7 168.2,58.3 169.5,58.2 170.7,57.5 172.0,50.7 173.2,58.0 174.5,53.6 175.7,54.4 177.0,58.7 178.2,58.9 179.5,54.4 180.8,53.7 182.0,12.7 183.3,19.4 184.5,7.6 185.8,41.2 187.0,59.3 188.3,49.3 189.5,36.7 190.8,52.7 192.1,4.0 193.3,48.4 194.6,54.4 195.8,59.2 197.1,48.7 198.3,18.1 199.6,27.6 200.8,58.9 202.1,54.8 203.3,58.8 204.6,60.0 205.9,59.0 207.1,59.3 208.4,50.4 209.6,26.3 210.9,59.3 212.1,57.0 213.4,51.4 214.6,18.2 215.9,48.7 217.2,59.5 218.4,56.4 219.7,54.8 220.9,48.3 222.2,36.1 223.4,49.0 224.7,59.0 225.9,41.9 227.2,58.8 228.5,53.9 229.7,38.5 231.0,42.0 232.2,35.7 233.5,28.6 234.7,58.8 236.0,58.4 237.2,59.1 238.5,58.0 239.7,58.0 241.0,58.0 242.3,52.5 243.5,35.5 244.8,36.9 246.0,35.5 247.3,52.6 248.5,58.0 249.8,33.6 251.0,58.4 252.3,57.3 253.6,56.5 254.8,55.8 256.1,58.3 257.3,58.4 258.6,56.6 259.8,58.2 261.1,43.3 262.3,42.2 263.6,57.3 264.9,57.8 266.1,58.0 267.4,57.5 268.6,58.0 269.9,58.0 271.1,58.3 272.4,56.7 273.6,56.6 274.9,56.9 276.2,56.5 277.4,57.0 278.7,57.8 279.9,57.1 281.2,51.5 282.4,29.2 283.7,15.1 284.9,56.2 286.2,42.1 287.4,56.2 288.7,45.5 290.0,37.5 291.2,56.2 292.5,56.1 293.7,56.9 295.0,56.6 296.2,56.4 297.5,56.0 298.7,47.0 300.0,57.0" style="stroke:var(--sky)" class="line" vector-effect="non-scaling-stroke"/></svg><div class="chart-axis"><span>min 66</span><span>max 1,392</span></div>
+        </div>
+        <div class="clim">
+          <div class="k">Pending fees <span class="mute">BTC</span></div>
+          <svg class="chart" viewBox="0 0 300 64" preserveAspectRatio="none" role="img" aria-label="24 hour trend"><polygon points="0,64 0.0,54.8 1.3,46.3 2.5,36.3 3.8,41.1 5.0,56.3 6.3,52.7 7.5,56.3 8.8,58.5 10.0,58.6 11.3,54.1 12.6,49.2 13.8,45.0 15.1,48.5 16.3,51.7 17.6,49.8 18.8,58.3 20.1,54.1 21.3,50.8 22.6,48.4 23.8,53.6 25.1,50.6 26.4,56.0 27.6,50.2 28.9,51.3 30.1,58.4 31.4,58.9 32.6,54.9 33.9,49.9 35.1,45.4 36.4,52.4 37.7,57.4 38.9,59.4 40.2,57.1 41.4,57.2 42.7,53.4 43.9,52.0 45.2,52.4 46.4,49.0 47.7,45.1 49.0,48.5 50.2,51.7 51.5,58.4 52.7,56.4 54.0,52.8 55.2,48.3 56.5,41.0 57.7,50.0 59.0,58.3 60.3,57.3 61.5,55.1 62.8,56.0 64.0,55.6 65.3,57.1 66.5,57.1 67.8,57.4 69.0,54.5 70.3,56.1 71.5,56.1 72.8,55.4 74.1,59.5 75.3,57.8 76.6,56.9 77.8,57.6 79.1,57.5 80.3,59.1 81.6,57.5 82.8,57.2 84.1,55.0 85.4,51.2 86.6,55.9 87.9,52.8 89.1,45.3 90.4,37.7 91.6,29.5 92.9,45.2 94.1,46.9 95.4,54.9 96.7,52.6 97.9,56.8 99.2,45.7 100.4,33.8 101.7,21.3 102.9,5.6 104.2,26.0 105.4,35.0 106.7,20.8 107.9,28.3 109.2,30.3 110.5,42.8 111.7,39.4 113.0,26.8 114.2,31.4 115.5,48.1 116.7,48.8 118.0,43.6 119.2,22.1 120.5,4.0 121.8,27.2 123.0,27.4 124.3,31.0 125.5,15.5 126.8,32.6 128.0,44.4 129.3,41.7 130.5,46.5 131.8,46.9 133.1,51.6 134.3,55.1 135.6,53.4 136.8,56.3 138.1,51.3 139.3,55.3 140.6,48.0 141.8,55.5 143.1,47.5 144.4,47.5 145.6,57.9 146.9,57.4 148.1,57.5 149.4,52.1 150.6,58.8 151.9,57.8 153.1,58.9 154.4,56.6 155.6,58.2 156.9,52.5 158.2,48.9 159.4,59.0 160.7,58.5 161.9,54.4 163.2,56.2 164.4,55.7 165.7,58.6 166.9,58.5 168.2,54.7 169.5,52.7 170.7,55.9 172.0,58.1 173.2,58.2 174.5,58.5 175.7,45.0 177.0,40.8 178.2,37.5 179.5,58.2 180.8,58.9 182.0,59.7 183.3,59.6 184.5,59.7 185.8,59.1 187.0,55.9 188.3,57.6 189.5,59.0 190.8,59.0 192.1,59.9 193.3,58.7 194.6,57.9 195.8,58.5 197.1,59.2 198.3,59.8 199.6,59.8 200.8,56.7 202.1,57.6 203.3,55.3 204.6,53.1 205.9,55.4 207.1,56.3 208.4,59.5 209.6,59.7 210.9,57.4 212.1,56.9 213.4,58.5 214.6,60.0 215.9,58.6 217.2,56.5 218.4,57.8 219.7,58.3 220.9,59.4 222.2,59.8 223.4,58.1 224.7,55.7 225.9,59.0 227.2,56.8 228.5,57.8 229.7,59.4 231.0,58.7 232.2,56.4 233.5,58.4 234.7,55.2 236.0,52.3 237.2,49.8 238.5,55.4 239.7,57.4 241.0,57.6 242.3,56.7 243.5,58.3 244.8,59.1 246.0,58.9 247.3,51.2 248.5,55.6 249.8,59.3 251.0,56.3 252.3,56.8 253.6,57.3 254.8,57.8 256.1,53.4 257.3,43.3 258.6,55.5 259.8,55.9 261.1,58.8 262.3,59.1 263.6,55.9 264.9,52.1 266.1,48.2 267.4,51.5 268.6,49.8 269.9,45.2 271.1,39.7 272.4,43.4 273.6,53.2 274.9,52.3 276.2,54.5 277.4,53.8 278.7,52.5 279.9,52.9 281.2,57.6 282.4,59.3 283.7,59.1 284.9,55.1 286.2,59.8 287.4,55.4 288.7,55.0 290.0,58.9 291.2,56.8 292.5,57.3 293.7,55.7 295.0,50.1 296.2,55.5 297.5,57.3 298.7,59.6 300.0,57.5 300,64" style="fill:var(--gold);opacity:.14"/><polyline points="0.0,54.8 1.3,46.3 2.5,36.3 3.8,41.1 5.0,56.3 6.3,52.7 7.5,56.3 8.8,58.5 10.0,58.6 11.3,54.1 12.6,49.2 13.8,45.0 15.1,48.5 16.3,51.7 17.6,49.8 18.8,58.3 20.1,54.1 21.3,50.8 22.6,48.4 23.8,53.6 25.1,50.6 26.4,56.0 27.6,50.2 28.9,51.3 30.1,58.4 31.4,58.9 32.6,54.9 33.9,49.9 35.1,45.4 36.4,52.4 37.7,57.4 38.9,59.4 40.2,57.1 41.4,57.2 42.7,53.4 43.9,52.0 45.2,52.4 46.4,49.0 47.7,45.1 49.0,48.5 50.2,51.7 51.5,58.4 52.7,56.4 54.0,52.8 55.2,48.3 56.5,41.0 57.7,50.0 59.0,58.3 60.3,57.3 61.5,55.1 62.8,56.0 64.0,55.6 65.3,57.1 66.5,57.1 67.8,57.4 69.0,54.5 70.3,56.1 71.5,56.1 72.8,55.4 74.1,59.5 75.3,57.8 76.6,56.9 77.8,57.6 79.1,57.5 80.3,59.1 81.6,57.5 82.8,57.2 84.1,55.0 85.4,51.2 86.6,55.9 87.9,52.8 89.1,45.3 90.4,37.7 91.6,29.5 92.9,45.2 94.1,46.9 95.4,54.9 96.7,52.6 97.9,56.8 99.2,45.7 100.4,33.8 101.7,21.3 102.9,5.6 104.2,26.0 105.4,35.0 106.7,20.8 107.9,28.3 109.2,30.3 110.5,42.8 111.7,39.4 113.0,26.8 114.2,31.4 115.5,48.1 116.7,48.8 118.0,43.6 119.2,22.1 120.5,4.0 121.8,27.2 123.0,27.4 124.3,31.0 125.5,15.5 126.8,32.6 128.0,44.4 129.3,41.7 130.5,46.5 131.8,46.9 133.1,51.6 134.3,55.1 135.6,53.4 136.8,56.3 138.1,51.3 139.3,55.3 140.6,48.0 141.8,55.5 143.1,47.5 144.4,47.5 145.6,57.9 146.9,57.4 148.1,57.5 149.4,52.1 150.6,58.8 151.9,57.8 153.1,58.9 154.4,56.6 155.6,58.2 156.9,52.5 158.2,48.9 159.4,59.0 160.7,58.5 161.9,54.4 163.2,56.2 164.4,55.7 165.7,58.6 166.9,58.5 168.2,54.7 169.5,52.7 170.7,55.9 172.0,58.1 173.2,58.2 174.5,58.5 175.7,45.0 177.0,40.8 178.2,37.5 179.5,58.2 180.8,58.9 182.0,59.7 183.3,59.6 184.5,59.7 185.8,59.1 187.0,55.9 188.3,57.6 189.5,59.0 190.8,59.0 192.1,59.9 193.3,58.7 194.6,57.9 195.8,58.5 197.1,59.2 198.3,59.8 199.6,59.8 200.8,56.7 202.1,57.6 203.3,55.3 204.6,53.1 205.9,55.4 207.1,56.3 208.4,59.5 209.6,59.7 210.9,57.4 212.1,56.9 213.4,58.5 214.6,60.0 215.9,58.6 217.2,56.5 218.4,57.8 219.7,58.3 220.9,59.4 222.2,59.8 223.4,58.1 224.7,55.7 225.9,59.0 227.2,56.8 228.5,57.8 229.7,59.4 231.0,58.7 232.2,56.4 233.5,58.4 234.7,55.2 236.0,52.3 237.2,49.8 238.5,55.4 239.7,57.4 241.0,57.6 242.3,56.7 243.5,58.3 244.8,59.1 246.0,58.9 247.3,51.2 248.5,55.6 249.8,59.3 251.0,56.3 252.3,56.8 253.6,57.3 254.8,57.8 256.1,53.4 257.3,43.3 258.6,55.5 259.8,55.9 261.1,58.8 262.3,59.1 263.6,55.9 264.9,52.1 266.1,48.2 267.4,51.5 268.6,49.8 269.9,45.2 271.1,39.7 272.4,43.4 273.6,53.2 274.9,52.3 276.2,54.5 277.4,53.8 278.7,52.5 279.9,52.9 281.2,57.6 282.4,59.3 283.7,59.1 284.9,55.1 286.2,59.8 287.4,55.4 288.7,55.0 290.0,58.9 291.2,56.8 292.5,57.3 293.7,55.7 295.0,50.1 296.2,55.5 297.5,57.3 298.7,59.6 300.0,57.5" style="stroke:var(--gold)" class="line" vector-effect="non-scaling-stroke"/></svg><div class="chart-axis"><span>min 0.023</span><span>max 0.211</span></div>
+        </div></div>
+</section>
+
+<section>
+  <div class="sec-h"><h2>Recent blocks</h2><p>Miner from the coinbase tag; fee rate is the block's fee-weighted average.</p></div>
+  <div class="card scroll"><table class="blocks">
+    <thead><tr><th>Height</th><th>Found</th><th class="num">Interval</th><th>Miner</th><th class="num">Txs</th><th>Full</th><th class="num">sat/vB</th><th class="num">Fees ₿</th><th class="num">Moved ₿</th></tr></thead>
+    <tbody>
+          <tr>
+            <td><a href="blocks/block_974001.html">974,001</a></td>
+            <td><time data-ts="1793467033">14m ago</time></td>
+            <td class="num">5m</td>
+            <td>ViaBTC</td>
+            <td class="num">5,176</td>
+            <td class="bar sm"><span style="width:100%"></span></td>
+            <td class="num">1.3</td>
+            <td class="num">0.0127</td>
+            <td class="num">4,743</td>
+          </tr>
+          <tr>
+            <td><a href="blocks/block_974000.html">974,000</a></td>
+            <td><time data-ts="1793466759">18m ago</time></td>
+            <td class="num">12m</td>
+            <td>MARA Pool</td>
+            <td class="num">3,468</td>
+            <td class="bar sm"><span style="width:100%"></span></td>
+            <td class="num">2.1</td>
+            <td class="num">0.0206</td>
+            <td class="num">6,694</td>
+          </tr>
+          <tr>
+            <td><a href="blocks/block_973999.html">973,999</a></td>
+            <td><time data-ts="1793466030">31m ago</time></td>
+            <td class="num">11m</td>
+            <td>Foundry USA</td>
+            <td class="num">3,666</td>
+            <td class="bar sm"><span style="width:100%"></span></td>
+            <td class="num">2.4</td>
+            <td class="num">0.0236</td>
+            <td class="num">6,143</td>
+          </tr>
+          <tr>
+            <td><a href="blocks/block_973998.html">973,998</a></td>
+            <td><time data-ts="1793465399">41m ago</time></td>
+            <td class="num">24m</td>
+            <td>F2Pool</td>
+            <td class="num">2,542</td>
+            <td class="bar sm"><span style="width:100%"></span></td>
+            <td class="num">3.9</td>
+            <td class="num">0.0395</td>
+            <td class="num">7,280</td>
+          </tr>
+          <tr>
+            <td><a href="blocks/block_973997.html">973,997</a></td>
+            <td><time data-ts="1793463966">65m ago</time></td>
+            <td class="num">17m</td>
+            <td>Foundry USA</td>
+            <td class="num">3,287</td>
+            <td class="bar sm"><span style="width:100%"></span></td>
+            <td class="num">2.7</td>
+            <td class="num">0.0272</td>
+            <td class="num">27,546</td>
+          </tr>
+          <tr>
+            <td><a href="blocks/block_973996.html">973,996</a></td>
+            <td><time data-ts="1793462953">82m ago</time></td>
+            <td class="num">9m</td>
+            <td>ViaBTC</td>
+            <td class="num">4,304</td>
+            <td class="bar sm"><span style="width:100%"></span></td>
+            <td class="num">1.8</td>
+            <td class="num">0.0178</td>
+            <td class="num">6,221</td>
+          </tr>
+          <tr>
+            <td><a href="blocks/block_973995.html">973,995</a></td>
+            <td><time data-ts="1793462437">1.5h ago</time></td>
+            <td class="num">3m</td>
+            <td>Foundry USA</td>
+            <td class="num">6,702</td>
+            <td class="bar sm"><span style="width:100%"></span></td>
+            <td class="num">0.64</td>
+            <td class="num">0.0063</td>
+            <td class="num">7,142</td>
+          </tr>
+          <tr>
+            <td><a href="blocks/block_973994.html">973,994</a></td>
+            <td><time data-ts="1793462278">1.6h ago</time></td>
+            <td class="num">45s</td>
+            <td>Foundry USA</td>
+            <td class="num">6,669</td>
+            <td class="bar sm"><span style="width:100%"></span></td>
+            <td class="num">0.46</td>
+            <td class="num">0.0045</td>
+            <td class="num">173.85</td>
+          </tr>
+          <tr>
+            <td><a href="blocks/block_973993.html">973,993</a></td>
+            <td><time data-ts="1793462233">1.6h ago</time></td>
+            <td class="num">23m</td>
+            <td>ViaBTC</td>
+            <td class="num">3,715</td>
+            <td class="bar sm"><span style="width:100%"></span></td>
+            <td class="num">3.9</td>
+            <td class="num">0.0389</td>
+            <td class="num">8,173</td>
+          </tr>
+          <tr>
+            <td><a href="blocks/block_973992.html">973,992</a></td>
+            <td><time data-ts="1793460863">1.9h ago</time></td>
+            <td class="num">3m</td>
+            <td>AntPool</td>
+            <td class="num">6,368</td>
+            <td class="bar sm"><span style="width:100%"></span></td>
+            <td class="num">0.62</td>
+            <td class="num">0.0062</td>
+            <td class="num">879.71</td>
+          </tr></tbody>
+  </table></div>
+</section>
+
+<div class="grid2">
+  <section>
+    <div class="sec-h"><h2>Mining</h2><p>Who found the last 144 blocks.</p></div>
+    <div class="card">
+      <div class="hbar"><span style="width:25.69%;background:var(--m1)" title="Foundry USA 37"></span><span style="width:16.67%;background:var(--m2)" title="AntPool 24"></span><span style="width:13.19%;background:var(--m3)" title="ViaBTC 19"></span><span style="width:13.19%;background:var(--m4)" title="F2Pool 19"></span><span style="width:7.64%;background:var(--m5)" title="SECPOOL 11"></span><span style="width:6.94%;background:var(--m6)" title="MARA Pool 10"></span><span style="width:6.25%;background:var(--m7)" title="Luxor 9"></span><span style="width:4.17%;background:var(--m8)" title="SpiderPool 6"></span><span style="width:6.25%;background:var(--c-other)"></span></div>
+      <ul class="legend"><li><i style="background:var(--m1)"></i>Foundry USA <b>37</b></li><li><i style="background:var(--m2)"></i>AntPool <b>24</b></li><li><i style="background:var(--m3)"></i>ViaBTC <b>19</b></li><li><i style="background:var(--m4)"></i>F2Pool <b>19</b></li><li><i style="background:var(--m5)"></i>SECPOOL <b>11</b></li><li><i style="background:var(--m6)"></i>MARA Pool <b>10</b></li><li><i style="background:var(--m7)"></i>Luxor <b>9</b></li><li><i style="background:var(--m8)"></i>SpiderPool <b>6</b></li><li><i style="background:var(--c-other)"></i>5 others <b>9</b></li></ul>
+      <dl class="facts">
+        <div><dt>Hashrate</dt><dd>1,074 <small>EH/s</small></dd></div>
+        <div><dt>Difficulty</dt><dd>148.4 <small>T</small></dd></div>
+        <div><dt>Subsidy</dt><dd>3.125 <small>₿/block</small></dd></div>
+        <div><dt>Issued</dt><dd>20.11M <small>/ 21M ₿</small></dd></div>
+      </dl>
+    </div>
+  </section>
+  <section>
+    <div class="sec-h"><h2>Seasons</h2><p>Difficulty epoch and halving cycle.</p></div>
+    <div class="card">
+      <div class="k">Difficulty epoch · block 273 of 2,016</div>
+      <div class="prog"><span style="width:13.5%"></span></div>
+      <p class="ln">Blocks averaging <b>10m</b> → next retarget
+        <b class="delta down">-1.2%</b> in 1,743 blocks
+        (~12d)</p>
+      <div class="k">Halving · 75,999 blocks to #1,050,000</div>
+      <div class="prog gold"><span style="width:63.8%"></span></div>
+      <p class="ln">Subsidy drops to <b>1.5625 ₿</b> in about <b>1.4y</b></p>
+    </div>
+  </section>
+</div>
+
+<div class="grid2">
+  <section>
+    <div class="sec-h"><h2>Notable</h2></div>
+    <ul class="events"><li class="ev info">22 urgent whales (>5 BTC @ premium fee)</li><li class="ev info">11 whale txs (≥100 BTC pending)</li><li class="ev info">14,454 stale txs (>7d)</li></ul>
+    <div class="card scroll"><table class="whales">
+      <thead><tr><th class="num">₿</th><th class="num">sat/vB</th><th class="num">Waiting</th><th>Tx</th></tr></thead>
+      <tbody>
+          <tr>
+            <td class="num"><b>2,480.82</b></td>
+            <td class="num">1.1</td>
+            <td class="num">13m</td>
+            <td><a href="https://mempool.space/tx/a4c52be40f4dcd721fb5d53a5eea3750118c9c57a53cb9cf9b15d6dfbc7b5f64" target="_blank" rel="noopener"><code>a4c52be40f…7b5f64</code></a></td>
+          </tr>
+          <tr>
+            <td class="num"><b>548.34</b></td>
+            <td class="num">3.0</td>
+            <td class="num">3m</td>
+            <td><a href="https://mempool.space/tx/0d3ffd38044c2073e08fdfeac2e5e50f07a9887fd6ad501820c4000be17d0ded" target="_blank" rel="noopener"><code>0d3ffd3804…7d0ded</code></a></td>
+          </tr>
+          <tr>
+            <td class="num"><b>358.26</b></td>
+            <td class="num">1.7</td>
+            <td class="num">5m</td>
+            <td><a href="https://mempool.space/tx/1bdaa77cbd5411f04c31b0965a20b6c2a533a3630c5f20bf8f5432e5d6f2fe89" target="_blank" rel="noopener"><code>1bdaa77cbd…f2fe89</code></a></td>
+          </tr>
+          <tr>
+            <td class="num"><b>347.10</b></td>
+            <td class="num">1.7</td>
+            <td class="num">9m</td>
+            <td><a href="https://mempool.space/tx/fabdc5b32b643cde3eb7f031928ea9b7e8fc414f4b94d1cd1a2da87699cb16fe" target="_blank" rel="noopener"><code>fabdc5b32b…cb16fe</code></a></td>
+          </tr>
+          <tr>
+            <td class="num"><b>237.61</b></td>
+            <td class="num">1.2</td>
+            <td class="num">13m</td>
+            <td><a href="https://mempool.space/tx/f6fef2407caa0edfddfa3160db6d7932199fd9ec0d7ef0c8cfdb81847740fcdb" target="_blank" rel="noopener"><code>f6fef2407c…40fcdb</code></a></td>
+          </tr></tbody>
+    </table></div>
+  </section>
+  <section>
+    <div class="sec-h"><h2>Radar</h2><p>Every pending tx: fee rate vs. time waiting.</p></div>
+    <div class="card radar"><img src="mempool_heatmap.png?t=1793467864" alt="Scatter of pending transactions: fee rate against time waiting, coloured by BTC amount" loading="lazy"></div>
+  </section>
+</div>
+
+<section>
+  <details class="notes" open>
+    <summary><h2>Forecaster's notes</h2></summary>
+    <div class="note state"><div class="note-k">Mempool state</div><div class="note-b">The mempool is <b>active but uncongested</b> — 48,903 transactions occupying <b>18.2 vMB</b> at rock-bottom fees (median 0.1 sat/vB). Size is <b>-10% vs 24h avg</b>; median fee is <b>-57% vs 24h avg</b>. A typical weekend lull.</div></div><div class="note outlook"><div class="note-k">Fee outlook</div><div class="note-b"><b>Good window for consolidations or non-urgent traffic</b> — paying just 1.1 sat/vB confirms in the next block.</div></div><div class="note alert"><div class="note-k">Urgent traffic</div><div class="note-b"><b>22 recent txes</b> moving <b>916.3 BTC</b> total are paying premium fees (≥3 sat/vB). <i>Consistent with time-sensitive settlements, exchange withdrawals, or bridge transfers — intent not confirmable from on-chain data.</i> Examples: <b>5.27 BTC</b> at 10.0 sat/vB (9m ago); <b>7.74 BTC</b> at 6.0 sat/vB (44s ago); <b>38.70 BTC</b> at 5.2 sat/vB (11m ago). Plus 19 more.</div></div><div class="note comp"><div class="note-k">Composition</div><div class="note-b">Of 5,703 recently-arrived classified txs, <b>51% are monetary</b> and <b>49% are non-monetary</b> — 10 inscriptions (0%), 2,773 OP_RETURN (49%). That's <b>-28% vs 24h avg</b>. <i>Significant data traffic alongside the monetary flow.</i></div></div><div class="note value"><div class="note-k">Value flow</div><div class="note-b"><b>6,615.1 BTC</b> queued for movement (+8% vs 24h avg). Most pending txs are small — typical retail/wallet traffic. 11 whale txes (≥100 btc) · 33 large (10–100 btc). Largest pending: 2,480.8234 BTC at 1.1 sat/vB. By value, <b>71%</b> of BTC sits in the <b>slow (0.5–2) sat/vB</b> tier.</div></div><div class="note age"><div class="note-k">Age structure</div><div class="note-b">Mempool has accumulated backlog — only 14,644 of 48,903 txs are from the last 6 hours. <b>14,454 stuck transactions older than a week</b> sit at minimum fee — cheap consolidations and dust waiting for a quiet block. Many will be evicted at the 14-day expiry.</div></div><div class="note block"><div class="note-k">Block cadence</div><div class="note-b">14m since the last block (#974,001) — slightly slow but within normal variance.</div></div>
+  </details>
+</section>
+
+
+<details class="mc">
+  <summary>🐉 Low-Entropy Sweeps &amp; Known Burns
+    <small>· 2,411 events on 311 distinct seeds · 4 burn addresses</small>
+  </summary>
+
+  <div class="trend-meta">
+    Last 365 days · daily cumulative · latest detection in block 973,955
+    · every block scanned through 973,997
+  </div>
+
+  <div class="commentary" style="margin:0.8em 0;">
+    Sweeper bot reacted within 0 confirmations: 6d ago, 0.00014568 BTC was funded and drained inside the same block (973,087).
+  </div>
+
+  <div class="trends">
+    <div class="trend">
+      <div class="trend-lbl">Weak-key sweeps</div>
+      <div class="trend-val">0.03775620 <small>BTC last 365d</small></div>
+      <svg width="200" height="40" class="spark" viewBox="0 0 200 40"><polygon fill="#a05050" fill-opacity="0.15" points="2.0,38.0 2.5,38.0 3.1,38.0 3.6,38.0 4.2,38.0 4.7,38.0 5.2,38.0 5.8,38.0 6.3,38.0 6.8,38.0 7.4,38.0 7.9,38.0 8.5,38.0 9.0,38.0 9.5,38.0 10.1,38.0 10.6,38.0 11.2,38.0 11.7,38.0 12.2,37.7 12.8,37.7 13.3,37.7 13.8,37.7 14.4,37.7 14.9,37.7 15.5,37.7 16.0,37.5 16.5,37.4 17.1,37.4 17.6,37.4 18.2,37.4 18.7,37.4 19.2,37.4 19.8,37.4 20.3,37.4 20.8,37.4 21.4,37.4 21.9,37.4 22.5,37.4 23.0,37.4 23.5,37.4 24.1,37.4 24.6,37.4 25.2,37.4 25.7,37.4 26.2,37.4 26.8,37.4 27.3,37.4 27.8,37.4 28.4,37.4 28.9,37.4 29.5,37.4 30.0,37.4 30.5,37.3 31.1,37.3 31.6,37.3 32.2,37.3 32.7,37.3 33.2,37.3 33.8,37.3 34.3,37.3 34.8,37.3 35.4,37.3 35.9,36.9 36.5,36.9 37.0,36.9 37.5,36.9 38.1,36.9 38.6,36.9 39.2,36.9 39.7,36.9 40.2,36.8 40.8,36.8 41.3,34.6 41.8,34.6 42.4,34.6 42.9,34.6 43.5,34.6 44.0,34.6 44.5,34.5 45.1,34.3 45.6,34.2 46.2,34.2 46.7,34.2 47.2,34.2 47.8,34.2 48.3,34.2 48.8,34.2 49.4,34.2 49.9,34.2 50.5,34.2 51.0,34.2 51.5,34.2 52.1,34.2 52.6,34.2 53.2,34.2 53.7,34.2 54.2,34.2 54.8,34.2 55.3,34.2 55.8,34.2 56.4,34.2 56.9,34.1 57.5,34.1 58.0,34.1 58.5,34.1 59.1,34.1 59.6,34.1 60.2,34.1 60.7,34.1 61.2,34.1 61.8,34.1 62.3,34.1 62.8,34.1 63.4,34.1 63.9,34.1 64.5,34.1 65.0,33.9 65.5,33.9 66.1,33.9 66.6,33.9 67.2,33.9 67.7,33.8 68.2,33.8 68.8,33.8 69.3,33.7 69.8,33.7 70.4,33.7 70.9,33.7 71.5,33.7 72.0,33.6 72.5,33.6 73.1,33.6 73.6,33.6 74.2,33.6 74.7,33.6 75.2,33.6 75.8,33.6 76.3,33.5 76.8,33.4 77.4,33.4 77.9,33.4 78.5,33.4 79.0,33.4 79.5,33.4 80.1,33.4 80.6,33.4 81.2,33.4 81.7,33.4 82.2,33.4 82.8,33.4 83.3,33.4 83.8,33.4 84.4,33.4 84.9,33.4 85.5,33.3 86.0,33.3 86.5,33.2 87.1,26.6 87.6,26.6 88.2,26.6 88.7,26.6 89.2,26.5 89.8,26.5 90.3,26.5 90.8,26.5 91.4,26.5 91.9,26.5 92.5,26.5 93.0,26.5 93.5,26.5 94.1,26.5 94.6,26.5 95.2,26.5 95.7,26.4 96.2,26.4 96.8,26.4 97.3,26.4 97.8,26.2 98.4,26.2 98.9,26.2 99.5,26.1 100.0,25.9 100.5,25.9 101.1,25.9 101.6,25.9 102.2,25.9 102.7,25.9 103.2,25.9 103.8,25.9 104.3,25.9 104.8,25.9 105.4,25.3 105.9,25.3 106.5,25.3 107.0,25.3 107.5,25.3 108.1,25.3 108.6,25.3 109.2,25.3 109.7,24.4 110.2,24.4 110.8,24.4 111.3,24.4 111.8,24.4 112.4,24.4 112.9,24.4 113.5,24.2 114.0,24.2 114.5,24.1 115.1,23.6 115.6,23.3 116.2,23.3 116.7,23.3 117.2,23.1 117.8,23.1 118.3,23.1 118.8,23.1 119.4,23.1 119.9,23.1 120.5,23.1 121.0,23.1 121.5,23.0 122.1,23.0 122.6,23.0 123.2,23.0 123.7,23.0 124.2,23.0 124.8,23.0 125.3,23.0 125.8,23.0 126.4,23.0 126.9,23.0 127.5,23.0 128.0,23.0 128.5,23.0 129.1,23.0 129.6,23.0 130.2,22.9 130.7,22.9 131.2,22.9 131.8,22.9 132.3,22.9 132.8,22.5 133.4,22.5 133.9,22.4 134.5,22.1 135.0,22.1 135.5,22.1 136.1,21.4 136.6,17.3 137.2,17.3 137.7,17.3 138.2,16.9 138.8,16.9 139.3,16.9 139.8,16.9 140.4,16.9 140.9,16.9 141.5,16.9 142.0,16.9 142.5,16.9 143.1,16.9 143.6,16.8 144.2,16.8 144.7,16.8 145.2,16.8 145.8,16.6 146.3,16.6 146.8,16.6 147.4,16.6 147.9,16.6 148.5,16.6 149.0,16.5 149.5,16.5 150.1,16.5 150.6,16.5 151.2,16.5 151.7,16.5 152.2,16.5 152.8,16.5 153.3,16.0 153.8,16.0 154.4,16.0 154.9,16.0 155.5,16.0 156.0,16.0 156.5,16.0 157.1,15.9 157.6,15.9 158.2,15.9 158.7,15.9 159.2,15.9 159.8,15.9 160.3,15.9 160.8,15.9 161.4,14.4 161.9,14.4 162.5,14.4 163.0,14.4 163.5,14.4 164.1,14.3 164.6,14.3 165.2,14.3 165.7,14.2 166.2,14.2 166.8,14.2 167.3,10.8 167.8,10.8 168.4,10.8 168.9,10.8 169.5,10.8 170.0,10.8 170.5,10.8 171.1,10.8 171.6,10.8 172.2,10.8 172.7,10.8 173.2,10.7 173.8,10.7 174.3,10.7 174.8,10.7 175.4,10.7 175.9,10.7 176.5,10.7 177.0,10.7 177.5,10.7 178.1,10.7 178.6,10.7 179.2,10.7 179.7,10.7 180.2,10.7 180.8,3.7 181.3,3.7 181.8,3.6 182.4,3.6 182.9,3.6 183.5,3.6 184.0,3.3 184.5,3.3 185.1,3.2 185.6,3.1 186.2,3.1 186.7,3.1 187.2,3.1 187.8,3.1 188.3,3.0 188.8,3.0 189.4,3.0 189.9,3.0 190.5,3.0 191.0,2.7 191.5,2.6 192.1,2.6 192.6,2.6 193.2,2.6 193.7,2.6 194.2,2.6 194.8,2.1 195.3,2.1 195.8,2.1 196.4,2.1 196.9,2.0 197.5,2.0 198.0,2.0 198.0,38.0 2.0,38.0"/><polyline fill="none" stroke="#a05050" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" points="2.0,38.0 2.5,38.0 3.1,38.0 3.6,38.0 4.2,38.0 4.7,38.0 5.2,38.0 5.8,38.0 6.3,38.0 6.8,38.0 7.4,38.0 7.9,38.0 8.5,38.0 9.0,38.0 9.5,38.0 10.1,38.0 10.6,38.0 11.2,38.0 11.7,38.0 12.2,37.7 12.8,37.7 13.3,37.7 13.8,37.7 14.4,37.7 14.9,37.7 15.5,37.7 16.0,37.5 16.5,37.4 17.1,37.4 17.6,37.4 18.2,37.4 18.7,37.4 19.2,37.4 19.8,37.4 20.3,37.4 20.8,37.4 21.4,37.4 21.9,37.4 22.5,37.4 23.0,37.4 23.5,37.4 24.1,37.4 24.6,37.4 25.2,37.4 25.7,37.4 26.2,37.4 26.8,37.4 27.3,37.4 27.8,37.4 28.4,37.4 28.9,37.4 29.5,37.4 30.0,37.4 30.5,37.3 31.1,37.3 31.6,37.3 32.2,37.3 32.7,37.3 33.2,37.3 33.8,37.3 34.3,37.3 34.8,37.3 35.4,37.3 35.9,36.9 36.5,36.9 37.0,36.9 37.5,36.9 38.1,36.9 38.6,36.9 39.2,36.9 39.7,36.9 40.2,36.8 40.8,36.8 41.3,34.6 41.8,34.6 42.4,34.6 42.9,34.6 43.5,34.6 44.0,34.6 44.5,34.5 45.1,34.3 45.6,34.2 46.2,34.2 46.7,34.2 47.2,34.2 47.8,34.2 48.3,34.2 48.8,34.2 49.4,34.2 49.9,34.2 50.5,34.2 51.0,34.2 51.5,34.2 52.1,34.2 52.6,34.2 53.2,34.2 53.7,34.2 54.2,34.2 54.8,34.2 55.3,34.2 55.8,34.2 56.4,34.2 56.9,34.1 57.5,34.1 58.0,34.1 58.5,34.1 59.1,34.1 59.6,34.1 60.2,34.1 60.7,34.1 61.2,34.1 61.8,34.1 62.3,34.1 62.8,34.1 63.4,34.1 63.9,34.1 64.5,34.1 65.0,33.9 65.5,33.9 66.1,33.9 66.6,33.9 67.2,33.9 67.7,33.8 68.2,33.8 68.8,33.8 69.3,33.7 69.8,33.7 70.4,33.7 70.9,33.7 71.5,33.7 72.0,33.6 72.5,33.6 73.1,33.6 73.6,33.6 74.2,33.6 74.7,33.6 75.2,33.6 75.8,33.6 76.3,33.5 76.8,33.4 77.4,33.4 77.9,33.4 78.5,33.4 79.0,33.4 79.5,33.4 80.1,33.4 80.6,33.4 81.2,33.4 81.7,33.4 82.2,33.4 82.8,33.4 83.3,33.4 83.8,33.4 84.4,33.4 84.9,33.4 85.5,33.3 86.0,33.3 86.5,33.2 87.1,26.6 87.6,26.6 88.2,26.6 88.7,26.6 89.2,26.5 89.8,26.5 90.3,26.5 90.8,26.5 91.4,26.5 91.9,26.5 92.5,26.5 93.0,26.5 93.5,26.5 94.1,26.5 94.6,26.5 95.2,26.5 95.7,26.4 96.2,26.4 96.8,26.4 97.3,26.4 97.8,26.2 98.4,26.2 98.9,26.2 99.5,26.1 100.0,25.9 100.5,25.9 101.1,25.9 101.6,25.9 102.2,25.9 102.7,25.9 103.2,25.9 103.8,25.9 104.3,25.9 104.8,25.9 105.4,25.3 105.9,25.3 106.5,25.3 107.0,25.3 107.5,25.3 108.1,25.3 108.6,25.3 109.2,25.3 109.7,24.4 110.2,24.4 110.8,24.4 111.3,24.4 111.8,24.4 112.4,24.4 112.9,24.4 113.5,24.2 114.0,24.2 114.5,24.1 115.1,23.6 115.6,23.3 116.2,23.3 116.7,23.3 117.2,23.1 117.8,23.1 118.3,23.1 118.8,23.1 119.4,23.1 119.9,23.1 120.5,23.1 121.0,23.1 121.5,23.0 122.1,23.0 122.6,23.0 123.2,23.0 123.7,23.0 124.2,23.0 124.8,23.0 125.3,23.0 125.8,23.0 126.4,23.0 126.9,23.0 127.5,23.0 128.0,23.0 128.5,23.0 129.1,23.0 129.6,23.0 130.2,22.9 130.7,22.9 131.2,22.9 131.8,22.9 132.3,22.9 132.8,22.5 133.4,22.5 133.9,22.4 134.5,22.1 135.0,22.1 135.5,22.1 136.1,21.4 136.6,17.3 137.2,17.3 137.7,17.3 138.2,16.9 138.8,16.9 139.3,16.9 139.8,16.9 140.4,16.9 140.9,16.9 141.5,16.9 142.0,16.9 142.5,16.9 143.1,16.9 143.6,16.8 144.2,16.8 144.7,16.8 145.2,16.8 145.8,16.6 146.3,16.6 146.8,16.6 147.4,16.6 147.9,16.6 148.5,16.6 149.0,16.5 149.5,16.5 150.1,16.5 150.6,16.5 151.2,16.5 151.7,16.5 152.2,16.5 152.8,16.5 153.3,16.0 153.8,16.0 154.4,16.0 154.9,16.0 155.5,16.0 156.0,16.0 156.5,16.0 157.1,15.9 157.6,15.9 158.2,15.9 158.7,15.9 159.2,15.9 159.8,15.9 160.3,15.9 160.8,15.9 161.4,14.4 161.9,14.4 162.5,14.4 163.0,14.4 163.5,14.4 164.1,14.3 164.6,14.3 165.2,14.3 165.7,14.2 166.2,14.2 166.8,14.2 167.3,10.8 167.8,10.8 168.4,10.8 168.9,10.8 169.5,10.8 170.0,10.8 170.5,10.8 171.1,10.8 171.6,10.8 172.2,10.8 172.7,10.8 173.2,10.7 173.8,10.7 174.3,10.7 174.8,10.7 175.4,10.7 175.9,10.7 176.5,10.7 177.0,10.7 177.5,10.7 178.1,10.7 178.6,10.7 179.2,10.7 179.7,10.7 180.2,10.7 180.8,3.7 181.3,3.7 181.8,3.6 182.4,3.6 182.9,3.6 183.5,3.6 184.0,3.3 184.5,3.3 185.1,3.2 185.6,3.1 186.2,3.1 186.7,3.1 187.2,3.1 187.8,3.1 188.3,3.0 188.8,3.0 189.4,3.0 189.9,3.0 190.5,3.0 191.0,2.7 191.5,2.6 192.1,2.6 192.6,2.6 193.2,2.6 193.7,2.6 194.2,2.6 194.8,2.1 195.3,2.1 195.8,2.1 196.4,2.1 196.9,2.0 197.5,2.0 198.0,2.0"/></svg>
+      <div class="trend-range">lifetime: 13.1668 BTC</div>
+    </div>
+    <div class="trend">
+      <div class="trend-lbl">Known sweep incidents</div>
+      <div class="trend-val">1,082.59 <small>BTC last 365d</small></div>
+      <svg width="200" height="40" class="spark" viewBox="0 0 200 40"><polygon fill="#c9803a" fill-opacity="0.15" points="2.0,38.0 2.5,38.0 3.1,38.0 3.6,38.0 4.2,38.0 4.7,38.0 5.2,38.0 5.8,38.0 6.3,38.0 6.8,38.0 7.4,38.0 7.9,38.0 8.5,38.0 9.0,38.0 9.5,38.0 10.1,38.0 10.6,38.0 11.2,38.0 11.7,38.0 12.2,38.0 12.8,38.0 13.3,38.0 13.8,38.0 14.4,38.0 14.9,38.0 15.5,38.0 16.0,38.0 16.5,38.0 17.1,38.0 17.6,38.0 18.2,38.0 18.7,38.0 19.2,38.0 19.8,38.0 20.3,38.0 20.8,38.0 21.4,38.0 21.9,38.0 22.5,38.0 23.0,38.0 23.5,38.0 24.1,38.0 24.6,38.0 25.2,38.0 25.7,38.0 26.2,38.0 26.8,38.0 27.3,38.0 27.8,38.0 28.4,38.0 28.9,38.0 29.5,38.0 30.0,38.0 30.5,38.0 31.1,38.0 31.6,38.0 32.2,38.0 32.7,38.0 33.2,38.0 33.8,38.0 34.3,38.0 34.8,38.0 35.4,38.0 35.9,38.0 36.5,38.0 37.0,38.0 37.5,38.0 38.1,38.0 38.6,38.0 39.2,38.0 39.7,38.0 40.2,38.0 40.8,38.0 41.3,38.0 41.8,38.0 42.4,38.0 42.9,38.0 43.5,38.0 44.0,38.0 44.5,38.0 45.1,38.0 45.6,38.0 46.2,38.0 46.7,38.0 47.2,38.0 47.8,38.0 48.3,38.0 48.8,38.0 49.4,38.0 49.9,38.0 50.5,38.0 51.0,38.0 51.5,38.0 52.1,38.0 52.6,38.0 53.2,38.0 53.7,38.0 54.2,38.0 54.8,38.0 55.3,38.0 55.8,38.0 56.4,38.0 56.9,38.0 57.5,38.0 58.0,38.0 58.5,38.0 59.1,38.0 59.6,38.0 60.2,38.0 60.7,38.0 61.2,38.0 61.8,38.0 62.3,38.0 62.8,38.0 63.4,38.0 63.9,38.0 64.5,38.0 65.0,38.0 65.5,38.0 66.1,38.0 66.6,38.0 67.2,38.0 67.7,38.0 68.2,38.0 68.8,38.0 69.3,38.0 69.8,38.0 70.4,38.0 70.9,38.0 71.5,38.0 72.0,38.0 72.5,38.0 73.1,38.0 73.6,38.0 74.2,38.0 74.7,38.0 75.2,38.0 75.8,38.0 76.3,38.0 76.8,38.0 77.4,38.0 77.9,38.0 78.5,38.0 79.0,38.0 79.5,38.0 80.1,38.0 80.6,38.0 81.2,38.0 81.7,38.0 82.2,38.0 82.8,38.0 83.3,38.0 83.8,38.0 84.4,38.0 84.9,38.0 85.5,38.0 86.0,38.0 86.5,38.0 87.1,38.0 87.6,38.0 88.2,38.0 88.7,38.0 89.2,38.0 89.8,38.0 90.3,38.0 90.8,38.0 91.4,38.0 91.9,38.0 92.5,38.0 93.0,38.0 93.5,38.0 94.1,38.0 94.6,38.0 95.2,38.0 95.7,38.0 96.2,38.0 96.8,38.0 97.3,38.0 97.8,38.0 98.4,38.0 98.9,38.0 99.5,38.0 100.0,38.0 100.5,38.0 101.1,38.0 101.6,38.0 102.2,38.0 102.7,38.0 103.2,38.0 103.8,38.0 104.3,38.0 104.8,38.0 105.4,38.0 105.9,38.0 106.5,38.0 107.0,38.0 107.5,38.0 108.1,38.0 108.6,38.0 109.2,38.0 109.7,38.0 110.2,38.0 110.8,38.0 111.3,38.0 111.8,38.0 112.4,38.0 112.9,38.0 113.5,38.0 114.0,38.0 114.5,38.0 115.1,38.0 115.6,38.0 116.2,38.0 116.7,38.0 117.2,38.0 117.8,38.0 118.3,38.0 118.8,38.0 119.4,38.0 119.9,38.0 120.5,38.0 121.0,38.0 121.5,38.0 122.1,38.0 122.6,38.0 123.2,38.0 123.7,38.0 124.2,38.0 124.8,38.0 125.3,38.0 125.8,38.0 126.4,38.0 126.9,38.0 127.5,38.0 128.0,38.0 128.5,38.0 129.1,38.0 129.6,38.0 130.2,38.0 130.7,38.0 131.2,38.0 131.8,38.0 132.3,38.0 132.8,38.0 133.4,38.0 133.9,38.0 134.5,38.0 135.0,38.0 135.5,38.0 136.1,38.0 136.6,38.0 137.2,38.0 137.7,38.0 138.2,38.0 138.8,38.0 139.3,38.0 139.8,38.0 140.4,38.0 140.9,38.0 141.5,38.0 142.0,38.0 142.5,38.0 143.1,38.0 143.6,38.0 144.2,38.0 144.7,38.0 145.2,38.0 145.8,38.0 146.3,38.0 146.8,38.0 147.4,38.0 147.9,2.0 148.5,2.0 149.0,2.0 149.5,2.0 150.1,2.0 150.6,2.0 151.2,2.0 151.7,2.0 152.2,2.0 152.8,2.0 153.3,2.0 153.8,2.0 154.4,2.0 154.9,2.0 155.5,2.0 156.0,2.0 156.5,2.0 157.1,2.0 157.6,2.0 158.2,2.0 158.7,2.0 159.2,2.0 159.8,2.0 160.3,2.0 160.8,2.0 161.4,2.0 161.9,2.0 162.5,2.0 163.0,2.0 163.5,2.0 164.1,2.0 164.6,2.0 165.2,2.0 165.7,2.0 166.2,2.0 166.8,2.0 167.3,2.0 167.8,2.0 168.4,2.0 168.9,2.0 169.5,2.0 170.0,2.0 170.5,2.0 171.1,2.0 171.6,2.0 172.2,2.0 172.7,2.0 173.2,2.0 173.8,2.0 174.3,2.0 174.8,2.0 175.4,2.0 175.9,2.0 176.5,2.0 177.0,2.0 177.5,2.0 178.1,2.0 178.6,2.0 179.2,2.0 179.7,2.0 180.2,2.0 180.8,2.0 181.3,2.0 181.8,2.0 182.4,2.0 182.9,2.0 183.5,2.0 184.0,2.0 184.5,2.0 185.1,2.0 185.6,2.0 186.2,2.0 186.7,2.0 187.2,2.0 187.8,2.0 188.3,2.0 188.8,2.0 189.4,2.0 189.9,2.0 190.5,2.0 191.0,2.0 191.5,2.0 192.1,2.0 192.6,2.0 193.2,2.0 193.7,2.0 194.2,2.0 194.8,2.0 195.3,2.0 195.8,2.0 196.4,2.0 196.9,2.0 197.5,2.0 198.0,2.0 198.0,38.0 2.0,38.0"/><polyline fill="none" stroke="#c9803a" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" points="2.0,38.0 2.5,38.0 3.1,38.0 3.6,38.0 4.2,38.0 4.7,38.0 5.2,38.0 5.8,38.0 6.3,38.0 6.8,38.0 7.4,38.0 7.9,38.0 8.5,38.0 9.0,38.0 9.5,38.0 10.1,38.0 10.6,38.0 11.2,38.0 11.7,38.0 12.2,38.0 12.8,38.0 13.3,38.0 13.8,38.0 14.4,38.0 14.9,38.0 15.5,38.0 16.0,38.0 16.5,38.0 17.1,38.0 17.6,38.0 18.2,38.0 18.7,38.0 19.2,38.0 19.8,38.0 20.3,38.0 20.8,38.0 21.4,38.0 21.9,38.0 22.5,38.0 23.0,38.0 23.5,38.0 24.1,38.0 24.6,38.0 25.2,38.0 25.7,38.0 26.2,38.0 26.8,38.0 27.3,38.0 27.8,38.0 28.4,38.0 28.9,38.0 29.5,38.0 30.0,38.0 30.5,38.0 31.1,38.0 31.6,38.0 32.2,38.0 32.7,38.0 33.2,38.0 33.8,38.0 34.3,38.0 34.8,38.0 35.4,38.0 35.9,38.0 36.5,38.0 37.0,38.0 37.5,38.0 38.1,38.0 38.6,38.0 39.2,38.0 39.7,38.0 40.2,38.0 40.8,38.0 41.3,38.0 41.8,38.0 42.4,38.0 42.9,38.0 43.5,38.0 44.0,38.0 44.5,38.0 45.1,38.0 45.6,38.0 46.2,38.0 46.7,38.0 47.2,38.0 47.8,38.0 48.3,38.0 48.8,38.0 49.4,38.0 49.9,38.0 50.5,38.0 51.0,38.0 51.5,38.0 52.1,38.0 52.6,38.0 53.2,38.0 53.7,38.0 54.2,38.0 54.8,38.0 55.3,38.0 55.8,38.0 56.4,38.0 56.9,38.0 57.5,38.0 58.0,38.0 58.5,38.0 59.1,38.0 59.6,38.0 60.2,38.0 60.7,38.0 61.2,38.0 61.8,38.0 62.3,38.0 62.8,38.0 63.4,38.0 63.9,38.0 64.5,38.0 65.0,38.0 65.5,38.0 66.1,38.0 66.6,38.0 67.2,38.0 67.7,38.0 68.2,38.0 68.8,38.0 69.3,38.0 69.8,38.0 70.4,38.0 70.9,38.0 71.5,38.0 72.0,38.0 72.5,38.0 73.1,38.0 73.6,38.0 74.2,38.0 74.7,38.0 75.2,38.0 75.8,38.0 76.3,38.0 76.8,38.0 77.4,38.0 77.9,38.0 78.5,38.0 79.0,38.0 79.5,38.0 80.1,38.0 80.6,38.0 81.2,38.0 81.7,38.0 82.2,38.0 82.8,38.0 83.3,38.0 83.8,38.0 84.4,38.0 84.9,38.0 85.5,38.0 86.0,38.0 86.5,38.0 87.1,38.0 87.6,38.0 88.2,38.0 88.7,38.0 89.2,38.0 89.8,38.0 90.3,38.0 90.8,38.0 91.4,38.0 91.9,38.0 92.5,38.0 93.0,38.0 93.5,38.0 94.1,38.0 94.6,38.0 95.2,38.0 95.7,38.0 96.2,38.0 96.8,38.0 97.3,38.0 97.8,38.0 98.4,38.0 98.9,38.0 99.5,38.0 100.0,38.0 100.5,38.0 101.1,38.0 101.6,38.0 102.2,38.0 102.7,38.0 103.2,38.0 103.8,38.0 104.3,38.0 104.8,38.0 105.4,38.0 105.9,38.0 106.5,38.0 107.0,38.0 107.5,38.0 108.1,38.0 108.6,38.0 109.2,38.0 109.7,38.0 110.2,38.0 110.8,38.0 111.3,38.0 111.8,38.0 112.4,38.0 112.9,38.0 113.5,38.0 114.0,38.0 114.5,38.0 115.1,38.0 115.6,38.0 116.2,38.0 116.7,38.0 117.2,38.0 117.8,38.0 118.3,38.0 118.8,38.0 119.4,38.0 119.9,38.0 120.5,38.0 121.0,38.0 121.5,38.0 122.1,38.0 122.6,38.0 123.2,38.0 123.7,38.0 124.2,38.0 124.8,38.0 125.3,38.0 125.8,38.0 126.4,38.0 126.9,38.0 127.5,38.0 128.0,38.0 128.5,38.0 129.1,38.0 129.6,38.0 130.2,38.0 130.7,38.0 131.2,38.0 131.8,38.0 132.3,38.0 132.8,38.0 133.4,38.0 133.9,38.0 134.5,38.0 135.0,38.0 135.5,38.0 136.1,38.0 136.6,38.0 137.2,38.0 137.7,38.0 138.2,38.0 138.8,38.0 139.3,38.0 139.8,38.0 140.4,38.0 140.9,38.0 141.5,38.0 142.0,38.0 142.5,38.0 143.1,38.0 143.6,38.0 144.2,38.0 144.7,38.0 145.2,38.0 145.8,38.0 146.3,38.0 146.8,38.0 147.4,38.0 147.9,2.0 148.5,2.0 149.0,2.0 149.5,2.0 150.1,2.0 150.6,2.0 151.2,2.0 151.7,2.0 152.2,2.0 152.8,2.0 153.3,2.0 153.8,2.0 154.4,2.0 154.9,2.0 155.5,2.0 156.0,2.0 156.5,2.0 157.1,2.0 157.6,2.0 158.2,2.0 158.7,2.0 159.2,2.0 159.8,2.0 160.3,2.0 160.8,2.0 161.4,2.0 161.9,2.0 162.5,2.0 163.0,2.0 163.5,2.0 164.1,2.0 164.6,2.0 165.2,2.0 165.7,2.0 166.2,2.0 166.8,2.0 167.3,2.0 167.8,2.0 168.4,2.0 168.9,2.0 169.5,2.0 170.0,2.0 170.5,2.0 171.1,2.0 171.6,2.0 172.2,2.0 172.7,2.0 173.2,2.0 173.8,2.0 174.3,2.0 174.8,2.0 175.4,2.0 175.9,2.0 176.5,2.0 177.0,2.0 177.5,2.0 178.1,2.0 178.6,2.0 179.2,2.0 179.7,2.0 180.2,2.0 180.8,2.0 181.3,2.0 181.8,2.0 182.4,2.0 182.9,2.0 183.5,2.0 184.0,2.0 184.5,2.0 185.1,2.0 185.6,2.0 186.2,2.0 186.7,2.0 187.2,2.0 187.8,2.0 188.3,2.0 188.8,2.0 189.4,2.0 189.9,2.0 190.5,2.0 191.0,2.0 191.5,2.0 192.1,2.0 192.6,2.0 193.2,2.0 193.7,2.0 194.2,2.0 194.8,2.0 195.3,2.0 195.8,2.0 196.4,2.0 196.9,2.0 197.5,2.0 198.0,2.0"/></svg>
+      <div class="trend-range">all recorded: 1,082.59 BTC</div>
+    </div>
+    <div class="trend">
+      <div class="trend-lbl">Known burns</div>
+      <div class="trend-val">117.96 <small>BTC last 365d</small></div>
+      <svg width="200" height="40" class="spark" viewBox="0 0 200 40"><polygon fill="#6e7681" fill-opacity="0.15" points="2.0,38.0 2.5,38.0 3.1,38.0 3.6,37.8 4.2,37.8 4.7,37.8 5.2,37.8 5.8,37.8 6.3,37.8 6.8,37.8 7.4,37.8 7.9,37.8 8.5,37.8 9.0,37.8 9.5,37.8 10.1,37.8 10.6,37.8 11.2,37.7 11.7,37.6 12.2,37.5 12.8,37.5 13.3,37.5 13.8,37.5 14.4,37.5 14.9,37.5 15.5,37.5 16.0,37.5 16.5,37.5 17.1,37.5 17.6,37.5 18.2,37.5 18.7,37.5 19.2,37.5 19.8,37.3 20.3,37.3 20.8,37.3 21.4,37.3 21.9,37.3 22.5,37.3 23.0,37.3 23.5,37.3 24.1,37.3 24.6,37.3 25.2,37.3 25.7,37.3 26.2,37.3 26.8,37.3 27.3,37.3 27.8,37.2 28.4,37.2 28.9,37.2 29.5,37.2 30.0,37.2 30.5,37.2 31.1,37.2 31.6,37.2 32.2,37.2 32.7,37.2 33.2,37.2 33.8,37.2 34.3,37.2 34.8,37.2 35.4,37.1 35.9,37.1 36.5,37.1 37.0,37.1 37.5,37.1 38.1,37.1 38.6,37.1 39.2,37.1 39.7,37.1 40.2,37.1 40.8,37.1 41.3,37.1 41.8,37.1 42.4,37.1 42.9,37.1 43.5,37.0 44.0,36.9 44.5,36.9 45.1,36.9 45.6,36.9 46.2,36.9 46.7,36.9 47.2,36.9 47.8,36.9 48.3,36.9 48.8,36.9 49.4,36.9 49.9,36.9 50.5,36.9 51.0,36.9 51.5,36.9 52.1,36.8 52.6,36.7 53.2,36.7 53.7,36.7 54.2,36.7 54.8,36.7 55.3,36.7 55.8,36.7 56.4,36.7 56.9,36.7 57.5,36.7 58.0,36.7 58.5,36.7 59.1,36.7 59.6,36.5 60.2,36.5 60.7,36.5 61.2,36.5 61.8,36.5 62.3,36.5 62.8,36.5 63.4,36.5 63.9,36.5 64.5,36.5 65.0,36.5 65.5,36.5 66.1,36.5 66.6,36.4 67.2,36.2 67.7,36.2 68.2,36.2 68.8,36.2 69.3,36.2 69.8,36.2 70.4,36.2 70.9,36.2 71.5,36.2 72.0,36.2 72.5,36.2 73.1,36.2 73.6,36.2 74.2,36.2 74.7,36.2 75.2,36.1 75.8,35.9 76.3,35.9 76.8,35.9 77.4,35.9 77.9,35.9 78.5,35.9 79.0,35.9 79.5,35.9 80.1,35.9 80.6,35.9 81.2,35.9 81.7,35.9 82.2,35.9 82.8,35.9 83.3,35.8 83.8,35.8 84.4,35.8 84.9,35.8 85.5,35.8 86.0,35.8 86.5,35.8 87.1,35.8 87.6,35.8 88.2,35.8 88.7,35.8 89.2,35.8 89.8,35.8 90.3,35.8 90.8,35.8 91.4,35.7 91.9,35.7 92.5,35.7 93.0,35.7 93.5,35.7 94.1,35.7 94.6,35.7 95.2,35.7 95.7,35.7 96.2,35.7 96.8,35.7 97.3,35.7 97.8,35.7 98.4,35.7 98.9,35.7 99.5,35.6 100.0,35.6 100.5,35.6 101.1,35.6 101.6,35.6 102.2,35.6 102.7,35.6 103.2,35.6 103.8,35.6 104.3,35.6 104.8,35.6 105.4,35.6 105.9,35.6 106.5,35.6 107.0,35.5 107.5,35.5 108.1,35.5 108.6,35.5 109.2,35.5 109.7,35.5 110.2,35.5 110.8,35.5 111.3,35.5 111.8,35.5 112.4,2.8 112.9,2.8 113.5,2.8 114.0,2.8 114.5,2.7 115.1,2.7 115.6,2.7 116.2,2.7 116.7,2.7 117.2,2.7 117.8,2.7 118.3,2.7 118.8,2.7 119.4,2.7 119.9,2.7 120.5,2.7 121.0,2.7 121.5,2.7 122.1,2.7 122.6,2.7 123.2,2.7 123.7,2.6 124.2,2.6 124.8,2.6 125.3,2.6 125.8,2.6 126.4,2.6 126.9,2.6 127.5,2.6 128.0,2.6 128.5,2.6 129.1,2.6 129.6,2.6 130.2,2.6 130.7,2.6 131.2,2.6 131.8,2.6 132.3,2.6 132.8,2.6 133.4,2.6 133.9,2.6 134.5,2.6 135.0,2.6 135.5,2.6 136.1,2.6 136.6,2.6 137.2,2.6 137.7,2.6 138.2,2.6 138.8,2.5 139.3,2.5 139.8,2.5 140.4,2.5 140.9,2.5 141.5,2.5 142.0,2.5 142.5,2.5 143.1,2.5 143.6,2.5 144.2,2.5 144.7,2.5 145.2,2.5 145.8,2.2 146.3,2.2 146.8,2.1 147.4,2.1 147.9,2.1 148.5,2.1 149.0,2.1 149.5,2.1 150.1,2.1 150.6,2.1 151.2,2.1 151.7,2.1 152.2,2.1 152.8,2.1 153.3,2.1 153.8,2.1 154.4,2.1 154.9,2.0 155.5,2.0 156.0,2.0 156.5,2.0 157.1,2.0 157.6,2.0 158.2,2.0 158.7,2.0 159.2,2.0 159.8,2.0 160.3,2.0 160.8,2.0 161.4,2.0 161.9,2.0 162.5,2.0 163.0,2.0 163.5,2.0 164.1,2.0 164.6,2.0 165.2,2.0 165.7,2.0 166.2,2.0 166.8,2.0 167.3,2.0 167.8,2.0 168.4,2.0 168.9,2.0 169.5,2.0 170.0,2.0 170.5,2.0 171.1,2.0 171.6,2.0 172.2,2.0 172.7,2.0 173.2,2.0 173.8,2.0 174.3,2.0 174.8,2.0 175.4,2.0 175.9,2.0 176.5,2.0 177.0,2.0 177.5,2.0 178.1,2.0 178.6,2.0 179.2,2.0 179.7,2.0 180.2,2.0 180.8,2.0 181.3,2.0 181.8,2.0 182.4,2.0 182.9,2.0 183.5,2.0 184.0,2.0 184.5,2.0 185.1,2.0 185.6,2.0 186.2,2.0 186.7,2.0 187.2,2.0 187.8,2.0 188.3,2.0 188.8,2.0 189.4,2.0 189.9,2.0 190.5,2.0 191.0,2.0 191.5,2.0 192.1,2.0 192.6,2.0 193.2,2.0 193.7,2.0 194.2,2.0 194.8,2.0 195.3,2.0 195.8,2.0 196.4,2.0 196.9,2.0 197.5,2.0 198.0,2.0 198.0,38.0 2.0,38.0"/><polyline fill="none" stroke="#6e7681" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" points="2.0,38.0 2.5,38.0 3.1,38.0 3.6,37.8 4.2,37.8 4.7,37.8 5.2,37.8 5.8,37.8 6.3,37.8 6.8,37.8 7.4,37.8 7.9,37.8 8.5,37.8 9.0,37.8 9.5,37.8 10.1,37.8 10.6,37.8 11.2,37.7 11.7,37.6 12.2,37.5 12.8,37.5 13.3,37.5 13.8,37.5 14.4,37.5 14.9,37.5 15.5,37.5 16.0,37.5 16.5,37.5 17.1,37.5 17.6,37.5 18.2,37.5 18.7,37.5 19.2,37.5 19.8,37.3 20.3,37.3 20.8,37.3 21.4,37.3 21.9,37.3 22.5,37.3 23.0,37.3 23.5,37.3 24.1,37.3 24.6,37.3 25.2,37.3 25.7,37.3 26.2,37.3 26.8,37.3 27.3,37.3 27.8,37.2 28.4,37.2 28.9,37.2 29.5,37.2 30.0,37.2 30.5,37.2 31.1,37.2 31.6,37.2 32.2,37.2 32.7,37.2 33.2,37.2 33.8,37.2 34.3,37.2 34.8,37.2 35.4,37.1 35.9,37.1 36.5,37.1 37.0,37.1 37.5,37.1 38.1,37.1 38.6,37.1 39.2,37.1 39.7,37.1 40.2,37.1 40.8,37.1 41.3,37.1 41.8,37.1 42.4,37.1 42.9,37.1 43.5,37.0 44.0,36.9 44.5,36.9 45.1,36.9 45.6,36.9 46.2,36.9 46.7,36.9 47.2,36.9 47.8,36.9 48.3,36.9 48.8,36.9 49.4,36.9 49.9,36.9 50.5,36.9 51.0,36.9 51.5,36.9 52.1,36.8 52.6,36.7 53.2,36.7 53.7,36.7 54.2,36.7 54.8,36.7 55.3,36.7 55.8,36.7 56.4,36.7 56.9,36.7 57.5,36.7 58.0,36.7 58.5,36.7 59.1,36.7 59.6,36.5 60.2,36.5 60.7,36.5 61.2,36.5 61.8,36.5 62.3,36.5 62.8,36.5 63.4,36.5 63.9,36.5 64.5,36.5 65.0,36.5 65.5,36.5 66.1,36.5 66.6,36.4 67.2,36.2 67.7,36.2 68.2,36.2 68.8,36.2 69.3,36.2 69.8,36.2 70.4,36.2 70.9,36.2 71.5,36.2 72.0,36.2 72.5,36.2 73.1,36.2 73.6,36.2 74.2,36.2 74.7,36.2 75.2,36.1 75.8,35.9 76.3,35.9 76.8,35.9 77.4,35.9 77.9,35.9 78.5,35.9 79.0,35.9 79.5,35.9 80.1,35.9 80.6,35.9 81.2,35.9 81.7,35.9 82.2,35.9 82.8,35.9 83.3,35.8 83.8,35.8 84.4,35.8 84.9,35.8 85.5,35.8 86.0,35.8 86.5,35.8 87.1,35.8 87.6,35.8 88.2,35.8 88.7,35.8 89.2,35.8 89.8,35.8 90.3,35.8 90.8,35.8 91.4,35.7 91.9,35.7 92.5,35.7 93.0,35.7 93.5,35.7 94.1,35.7 94.6,35.7 95.2,35.7 95.7,35.7 96.2,35.7 96.8,35.7 97.3,35.7 97.8,35.7 98.4,35.7 98.9,35.7 99.5,35.6 100.0,35.6 100.5,35.6 101.1,35.6 101.6,35.6 102.2,35.6 102.7,35.6 103.2,35.6 103.8,35.6 104.3,35.6 104.8,35.6 105.4,35.6 105.9,35.6 106.5,35.6 107.0,35.5 107.5,35.5 108.1,35.5 108.6,35.5 109.2,35.5 109.7,35.5 110.2,35.5 110.8,35.5 111.3,35.5 111.8,35.5 112.4,2.8 112.9,2.8 113.5,2.8 114.0,2.8 114.5,2.7 115.1,2.7 115.6,2.7 116.2,2.7 116.7,2.7 117.2,2.7 117.8,2.7 118.3,2.7 118.8,2.7 119.4,2.7 119.9,2.7 120.5,2.7 121.0,2.7 121.5,2.7 122.1,2.7 122.6,2.7 123.2,2.7 123.7,2.6 124.2,2.6 124.8,2.6 125.3,2.6 125.8,2.6 126.4,2.6 126.9,2.6 127.5,2.6 128.0,2.6 128.5,2.6 129.1,2.6 129.6,2.6 130.2,2.6 130.7,2.6 131.2,2.6 131.8,2.6 132.3,2.6 132.8,2.6 133.4,2.6 133.9,2.6 134.5,2.6 135.0,2.6 135.5,2.6 136.1,2.6 136.6,2.6 137.2,2.6 137.7,2.6 138.2,2.6 138.8,2.5 139.3,2.5 139.8,2.5 140.4,2.5 140.9,2.5 141.5,2.5 142.0,2.5 142.5,2.5 143.1,2.5 143.6,2.5 144.2,2.5 144.7,2.5 145.2,2.5 145.8,2.2 146.3,2.2 146.8,2.1 147.4,2.1 147.9,2.1 148.5,2.1 149.0,2.1 149.5,2.1 150.1,2.1 150.6,2.1 151.2,2.1 151.7,2.1 152.2,2.1 152.8,2.1 153.3,2.1 153.8,2.1 154.4,2.1 154.9,2.0 155.5,2.0 156.0,2.0 156.5,2.0 157.1,2.0 157.6,2.0 158.2,2.0 158.7,2.0 159.2,2.0 159.8,2.0 160.3,2.0 160.8,2.0 161.4,2.0 161.9,2.0 162.5,2.0 163.0,2.0 163.5,2.0 164.1,2.0 164.6,2.0 165.2,2.0 165.7,2.0 166.2,2.0 166.8,2.0 167.3,2.0 167.8,2.0 168.4,2.0 168.9,2.0 169.5,2.0 170.0,2.0 170.5,2.0 171.1,2.0 171.6,2.0 172.2,2.0 172.7,2.0 173.2,2.0 173.8,2.0 174.3,2.0 174.8,2.0 175.4,2.0 175.9,2.0 176.5,2.0 177.0,2.0 177.5,2.0 178.1,2.0 178.6,2.0 179.2,2.0 179.7,2.0 180.2,2.0 180.8,2.0 181.3,2.0 181.8,2.0 182.4,2.0 182.9,2.0 183.5,2.0 184.0,2.0 184.5,2.0 185.1,2.0 185.6,2.0 186.2,2.0 186.7,2.0 187.2,2.0 187.8,2.0 188.3,2.0 188.8,2.0 189.4,2.0 189.9,2.0 190.5,2.0 191.0,2.0 191.5,2.0 192.1,2.0 192.6,2.0 193.2,2.0 193.7,2.0 194.2,2.0 194.8,2.0 195.3,2.0 195.8,2.0 196.4,2.0 196.9,2.0 197.5,2.0 198.0,2.0"/></svg>
+      <div class="trend-range">lifetime: 2,955.01 BTC</div>
+    </div>
+  </div>
+
+  
+  <div class="campaigns">
+    <h4>Known incidents</h4>
+    
+    <div class="incident">
+      <div class="inc-h"><b>COLDCARD seed-entropy sweep</b>
+        <small>· 2026-07-30 · blocks 960,183–960,191</small></div>
+      <div class="inc-stats">
+        <div><b>1,082.59</b><span>BTC swept</span></div>
+        <div><b>1,195</b><span>wallets emptied</span></div>
+        <div><b>4</b><span>destinations</span></div>
+        <div><b>1,050.14</b><span>BTC moved on by the sweeper</span></div>
+      </div>
+      <p>Dormant single-sig wallets emptied in about 25 minutes on 30 July 2026, the day Coinkite disclosed that some COLDCARD firmware generated seeds from a predictable RNG. Public reports cite 594.5 BTC from ~500 wallets; this node sees that wave plus three more destinations swept by the same actor (same ~30 sat/vB fee, coins dormant ~3 years) within nine blocks.</p>
+      <p class="inc-note">Linked to COLDCARD by public reports and timing; Coinkite&#x27;s advisory confirms weak seeds were exploited but does not list transactions.</p>
+      <details><summary>Destinations</summary><ul class="inc-dests"><li><a href="https://mempool.space/address/bc1qnk4zh9qcnap2mycp56qjrgza3cc8ylrh8fecp0" target="_blank" rel="noopener"><code>bc1qnk4zh9qcnap2mycp56qjrgza3cc8ylrh8fecp0</code></a></li><li><a href="https://mempool.space/address/bc1qc779m8gec84k3t0ffvu0pps94zheht7lr7ueyn" target="_blank" rel="noopener"><code>bc1qc779m8gec84k3t0ffvu0pps94zheht7lr7ueyn</code></a></li><li><a href="https://mempool.space/address/bc1qdaarag7729c2n4l2wnyt3hkhfpcs66n98z7uuh" target="_blank" rel="noopener"><code>bc1qdaarag7729c2n4l2wnyt3hkhfpcs66n98z7uuh</code></a></li><li><a href="https://mempool.space/address/bc1qh0l7q0mca3ln7wsl9luwns0jc9jhgrtft025l4" target="_blank" rel="noopener"><code>bc1qh0l7q0mca3ln7wsl9luwns0jc9jhgrtft025l4</code></a></li></ul></details>
+      <p class="inc-src">Sources: <a href="https://blog.coinkite.com/coldcard-mk3-seed-generation-warning/" target="_blank" rel="noopener">Coinkite advisory</a> · <a href="https://blog.coinkite.com/entropy-technical-backgrounder/" target="_blank" rel="noopener">Coinkite technical background</a> · <a href="https://engineering.block.xyz/blog/predictable-rng-fallback-and-32-bit-reseed-in-coldcard-firmware" target="_blank" rel="noopener">Block engineering analysis</a> · <a href="https://www.coindesk.com/tech/2026/07/31/major-bitcoin-wallet-flaw-drains-594-btc-in-25-minute-sweep" target="_blank" rel="noopener">CoinDesk</a></p>
+    </div>
+    <h4>Dormant-wallet sweep clusters <small>· unattributed leads, since block 945,000</small></h4>
+    <p class="inc-note">Many separate wallets holding long-dormant coins (avg. age &ge; 1 year),
+      each emptied in its own transaction into one address within a few blocks at one fee rate.
+      A key-compromise sweep looks like this, but so does a custodian consolidating old deposit
+      addresses. Thieves racing other bots tend to pay well above the going fee rate; clusters at
+      the minimum rate are more likely housekeeping. Not counted in the totals above.</p>
+    <div style="overflow-x:auto"><table class="whales">
+      <thead><tr><th>Date</th><th class="num">Block</th><th class="num">BTC</th>
+        <th class="num">Wallets</th><th class="num">sat/vB</th><th class="num">Coin age</th>
+        <th>Destination</th></tr></thead>
+      <tbody><tr><td>2026-10-30</td><td class="num">973,772</td><td class="num">101.05</td><td class="num">1,633</td><td class="num">1.6</td><td class="num">1.4y</td><td><a href="https://mempool.space/address/bc1q0t765hfhgyv5dzl3n4flzlryganacj6tesrsm0" target="_blank" rel="noopener"><code>bc1q0t765hfh…</code></a></td></tr><tr><td>2026-10-24</td><td class="num">972,872</td><td class="num">0.69845423</td><td class="num">780</td><td class="num">4.0</td><td class="num">1.3y</td><td><a href="https://mempool.space/address/1N1iMcpteRmzyC6vu3BEm5Bg9be2L3hsMZ" target="_blank" rel="noopener"><code>1N1iMcpteRmz…</code></a> +1</td></tr><tr><td>2026-10-14</td><td class="num">971,355</td><td class="num">0.99872500</td><td class="num">58</td><td class="num">1.8</td><td class="num">2.8y</td><td><a href="https://mempool.space/address/bc1pvhkphafdehcs6e6qfn2j5t49xy26uqe24yswuc6d8223rg0a4jsqralgk0" target="_blank" rel="noopener"><code>bc1pvhkphafd…</code></a></td></tr><tr><td>2026-10-10</td><td class="num">970,730</td><td class="num">0.51589861</td><td class="num">71</td><td class="num">1.0</td><td class="num">1.3y</td><td><a href="https://mempool.space/address/bc1p3eausd2s98t4f98ywxw902yced24jru3ny0j8j5snq0xl25chw7s0czh4v" target="_blank" rel="noopener"><code>bc1p3eausd2s…</code></a></td></tr><tr><td>2026-10-09</td><td class="num">970,572</td><td class="num">58.7348</td><td class="num">80</td><td class="num">1.0</td><td class="num">5.6y</td><td><a href="https://mempool.space/address/bc1qumk0m2hwy2vvau9apm3j4q6shg4eylr7xjp6d0" target="_blank" rel="noopener"><code>bc1qumk0m2hw…</code></a></td></tr><tr><td>2026-10-08</td><td class="num">970,519</td><td class="num">352.46</td><td class="num">238</td><td class="num">4.5</td><td class="num">1.0y</td><td><a href="https://mempool.space/address/bc1q7z9es4yn475d3qq0dzfsvl585g0u3h6q3d5uqj" target="_blank" rel="noopener"><code>bc1q7z9es4yn…</code></a></td></tr><tr><td>2026-10-08</td><td class="num">970,499</td><td class="num">0.78320440</td><td class="num">63</td><td class="num">41.8</td><td class="num">2.6y</td><td><a href="https://mempool.space/address/bc1qgqheemzla77pesl227hdtgf5ykz62d0zvld26n" target="_blank" rel="noopener"><code>bc1qgqheemzl…</code></a></td></tr><tr><td>2026-10-07</td><td class="num">970,394</td><td class="num">0.15362802</td><td class="num">177</td><td class="num">1.2</td><td class="num">1.1y</td><td><a href="https://mempool.space/address/bc1qqcmhdy83lhmtx252stjmhweqq0cgc6lcgzq3hx" target="_blank" rel="noopener"><code>bc1qqcmhdy83…</code></a></td></tr><tr><td>2026-10-07</td><td class="num">970,325</td><td class="num">83.1508</td><td class="num">80</td><td class="num">1.0</td><td class="num">5.7y</td><td><a href="https://mempool.space/address/bc1qpcmsad4zv4d2q3lz9hnhn75l7esl65nxymse6z" target="_blank" rel="noopener"><code>bc1qpcmsad4z…</code></a></td></tr><tr><td>2026-10-07</td><td class="num">970,268</td><td class="num">167.83</td><td class="num">121</td><td class="num">1.0</td><td class="num">5.6y</td><td><a href="https://mempool.space/address/bc1qpcmsad4zv4d2q3lz9hnhn75l7esl65nxymse6z" target="_blank" rel="noopener"><code>bc1qpcmsad4z…</code></a></td></tr></tbody>
+    </table></div>
+  </div>
+
+  <details class="mc">
+    <summary>Notable events <small>(10)</small></summary>
+    <ul class="events" style="padding-left:1.2em;"><li style="margin:0.3em 0;"><span style="color:var(--text-mute); font-size:0.85em;">2026-10-25</span> <span style="color:var(--c-data); font-weight:600; font-size:0.78em; letter-spacing:0.05em; text-transform:uppercase;">[high]</span> Same-block sweep: 0.00014568 BTC funded and drained in block 973,087 (bot reaction = 0 confirmations) <a href="https://mempool.space/tx/53fe4f55cde562cefbc9d1ba93a3b490f3751cebcf87addfef07f5c788a5b373" target="_blank" rel="noopener" style="font-size:0.85em;">tx</a></li><li style="margin:0.3em 0;"><span style="color:var(--text-mute); font-size:0.85em;">2026-10-18</span> <span style="color:var(--c-data); font-weight:600; font-size:0.78em; letter-spacing:0.05em; text-transform:uppercase;">[high]</span> Same-block sweep: 0.00030000 BTC funded and drained in block 971,938 (bot reaction = 0 confirmations) <a href="https://mempool.space/tx/7df4d3c6352191feb13cf39c36bb30a261b26984450f6bd22f9746636ea403d1" target="_blank" rel="noopener" style="font-size:0.85em;">tx</a></li><li style="margin:0.3em 0;"><span style="color:var(--text-mute); font-size:0.85em;">2026-10-04</span> <span style="color:var(--c-data); font-weight:600; font-size:0.78em; letter-spacing:0.05em; text-transform:uppercase;">[high]</span> Same-block sweep: 0.00033329 BTC funded and drained in block 969,889 (bot reaction = 0 confirmations) <a href="https://mempool.space/tx/962e10f252b27fea23d8ecd6d03523948a69efcc9545e41e909727f0fc153fb1" target="_blank" rel="noopener" style="font-size:0.85em;">tx</a></li><li style="margin:0.3em 0;"><span style="color:var(--text-mute); font-size:0.85em;">2026-10-31</span> <span style="color:var(--c-inscription); font-weight:600; font-size:0.78em; letter-spacing:0.05em; text-transform:uppercase;">[med]</span> Multi-vector sweeper 155M7TvBRww6WF…  — 3 classes (sequential_1to10k, bip39_tier1, bip39_brain)</li><li style="margin:0.3em 0;"><span style="color:var(--text-mute); font-size:0.85em;">2026-10-28</span> <span style="color:var(--c-inscription); font-weight:600; font-size:0.78em; letter-spacing:0.05em; text-transform:uppercase;">[med]</span> First-ever hit on milksad seed id=165714 — 0.00008000 BTC <a href="https://mempool.space/tx/be0be730585f84f7519b1eeda76e948d1508522950f9577ea7fc3e6e8a0cd89b" target="_blank" rel="noopener" style="font-size:0.85em;">tx</a></li><li style="margin:0.3em 0;"><span style="color:var(--text-mute); font-size:0.85em;">2026-10-16</span> <span style="color:var(--c-inscription); font-weight:600; font-size:0.78em; letter-spacing:0.05em; text-transform:uppercase;">[med]</span> First-ever hit on milksad seed id=11148 — 0.00002440 BTC <a href="https://mempool.space/tx/486b1cbb8fe8286056c53e069ac5993b76046ff3225bad8fb371b62b19664696" target="_blank" rel="noopener" style="font-size:0.85em;">tx</a></li><li style="margin:0.3em 0;"><span style="color:var(--text-mute); font-size:0.85em;">2026-10-07</span> <span style="color:var(--c-inscription); font-weight:600; font-size:0.78em; letter-spacing:0.05em; text-transform:uppercase;">[med]</span> First-ever hit on milksad seed id=302549 — 0.00002289 BTC <a href="https://mempool.space/tx/444783009c7eb1164dc7185bdcc1ee896088f6dceaa83ca87bfa9cf5aef38a14" target="_blank" rel="noopener" style="font-size:0.85em;">tx</a></li><li style="margin:0.3em 0;"><span style="color:var(--text-mute); font-size:0.85em;">2026-10-07</span> <span style="color:var(--c-inscription); font-weight:600; font-size:0.78em; letter-spacing:0.05em; text-transform:uppercase;">[med]</span> First-ever hit on milksad seed id=294388 — 0.00002404 BTC <a href="https://mempool.space/tx/74200d5174ba098eee555e4e62f992708f4bf676d5b55161fbd80099b040b9a9" target="_blank" rel="noopener" style="font-size:0.85em;">tx</a></li><li style="margin:0.3em 0;"><span style="color:var(--text-mute); font-size:0.85em;">2026-10-07</span> <span style="color:var(--c-inscription); font-weight:600; font-size:0.78em; letter-spacing:0.05em; text-transform:uppercase;">[med]</span> First-ever hit on milksad seed id=300393 — 0.00001201 BTC <a href="https://mempool.space/tx/181e09dc0b52d23d5e56399bbaaa973f785987261c0a851f5305fd54aaa86f3a" target="_blank" rel="noopener" style="font-size:0.85em;">tx</a></li><li style="margin:0.3em 0;"><span style="color:var(--text-mute); font-size:0.85em;">2026-10-07</span> <span style="color:var(--c-inscription); font-weight:600; font-size:0.78em; letter-spacing:0.05em; text-transform:uppercase;">[med]</span> First-ever hit on milksad seed id=312251 — 0.00003603 BTC <a href="https://mempool.space/tx/909c864814b7ca6af39bb51f00fa1539dab5344bbeeeedfc21249c5ddf580d03" target="_blank" rel="noopener" style="font-size:0.85em;">tx</a></li></ul>
+  </details>
+
+  <details class="mc">
+    <summary>Top recent weak-key sweeps</summary>
+    <table class="whales"><thead><tr><th class="num">BTC</th><th>Vector</th><th>Age</th><th>Address</th><th>txid</th><th></th></tr></thead><tbody><tr><td class="num">0.00008000</td><td><a href="#vec-milksad" class="vec-tag">milksad</a></td><td>2d</td><td><code>3Eptb4rdcL…ZomASo</code></td><td><a href="https://mempool.space/tx/be0be730585f84f7519b1eeda76e948d1508522950f9577ea7fc3e6e8a0cd89b" target="_blank" rel="noopener">be0be730…0cd89b</a></td><td><a href="javascript:void(0)" class="why-toggle" data-target="why-0" style="color:var(--info); border-bottom:1px dotted var(--info); text-decoration:none; cursor:pointer;">why?</a></td></tr><tr id="why-0" class="why-detail" style="display:none; background:rgba(0,0,0,0.12);"><td colspan="6" style="padding:0.8em 1em; font-size:0.92em; line-height:1.5;"><p style="margin:0.4em 0;">Wallets generated by Libbitcoin Explorer's <code>bx seed</code> command (versions 3.0.0–3.6.0). Used a Mersenne Twister with a 32-bit seed (~4 billion possible wallets) — fully brute-forceable. Researchers swept ~$1M from these wallets in 2023. The Pi monitors the 313K affected addresses published by milksad.info. <a href="https://milksad.info" target="_blank" rel="noopener">milksad.info</a></p><div style="margin-top:0.6em; padding:0.5em 0.8em; background:rgba(0,0,0,0.18); border-left:3px solid var(--gold); border-radius:3px; font-size:0.9em;"><strong>Source:</strong> position 165714 in milksad.info's published affected-address list<br><strong>Address form:</strong> <code>p2sh</code></div></td></tr><tr><td class="num">0.00014568</td><td><a href="#vec-sequential_1to10k" class="vec-tag">sequential 1to10k</a></td><td>6d</td><td><code>bc1qw508d6…v8f3t4</code></td><td><a href="https://mempool.space/tx/53fe4f55cde562cefbc9d1ba93a3b490f3751cebcf87addfef07f5c788a5b373" target="_blank" rel="noopener">53fe4f55…a5b373</a></td><td><a href="javascript:void(0)" class="why-toggle" data-target="why-1" style="color:var(--info); border-bottom:1px dotted var(--info); text-decoration:none; cursor:pointer;">why?</a></td></tr><tr id="why-1" class="why-detail" style="display:none; background:rgba(0,0,0,0.12);"><td colspan="6" style="padding:0.8em 1em; font-size:0.92em; line-height:1.5;"><p style="margin:0.4em 0;">Anyone using a private key in 1..10,000 (e.g. <code>k = 1</code>, <code>2</code>, …) shares it with anyone who has ever downloaded a Bitcoin puzzle list. These are the famous "puzzle addresses" — funds sent here are typically swept within seconds by automated bots.</p><div style="margin-top:0.6em; padding:0.5em 0.8em; background:rgba(0,0,0,0.18); border-left:3px solid var(--gold); border-radius:3px; font-size:0.9em;"><strong>Private key:</strong> <code>k = 1</code><br><strong>Address form:</strong> <code>p2wpkh</code></div></td></tr><tr><td class="num">0.00014568</td><td><a href="#vec-sequential_1to10k" class="vec-tag">sequential 1to10k</a></td><td>6d</td><td><code>bc1qw508d6…v8f3t4</code></td><td><a href="https://mempool.space/tx/0a068504bd65f306e84037e7c48fd70c3dd3141575c0216adcaad7ca1cb77c85" target="_blank" rel="noopener">0a068504…b77c85</a></td><td><a href="javascript:void(0)" class="why-toggle" data-target="why-2" style="color:var(--info); border-bottom:1px dotted var(--info); text-decoration:none; cursor:pointer;">why?</a></td></tr><tr id="why-2" class="why-detail" style="display:none; background:rgba(0,0,0,0.12);"><td colspan="6" style="padding:0.8em 1em; font-size:0.92em; line-height:1.5;"><p style="margin:0.4em 0;">Anyone using a private key in 1..10,000 (e.g. <code>k = 1</code>, <code>2</code>, …) shares it with anyone who has ever downloaded a Bitcoin puzzle list. These are the famous "puzzle addresses" — funds sent here are typically swept within seconds by automated bots.</p><div style="margin-top:0.6em; padding:0.5em 0.8em; background:rgba(0,0,0,0.18); border-left:3px solid var(--gold); border-radius:3px; font-size:0.9em;"><strong>Private key:</strong> <code>k = 1</code><br><strong>Address form:</strong> <code>p2wpkh</code></div></td></tr><tr><td class="num">0.00014568</td><td><a href="#vec-sequential_1to10k" class="vec-tag">sequential 1to10k</a></td><td>6d</td><td><code>bc1qw508d6…v8f3t4</code></td><td><a href="https://mempool.space/tx/d6c8e1c4d0572b94fe7f22f968a5d93e626246c57f4dcc6d6d88b6d988fcee91" target="_blank" rel="noopener">d6c8e1c4…fcee91</a></td><td><a href="javascript:void(0)" class="why-toggle" data-target="why-3" style="color:var(--info); border-bottom:1px dotted var(--info); text-decoration:none; cursor:pointer;">why?</a></td></tr><tr id="why-3" class="why-detail" style="display:none; background:rgba(0,0,0,0.12);"><td colspan="6" style="padding:0.8em 1em; font-size:0.92em; line-height:1.5;"><p style="margin:0.4em 0;">Anyone using a private key in 1..10,000 (e.g. <code>k = 1</code>, <code>2</code>, …) shares it with anyone who has ever downloaded a Bitcoin puzzle list. These are the famous "puzzle addresses" — funds sent here are typically swept within seconds by automated bots.</p><div style="margin-top:0.6em; padding:0.5em 0.8em; background:rgba(0,0,0,0.18); border-left:3px solid var(--gold); border-radius:3px; font-size:0.9em;"><strong>Private key:</strong> <code>k = 1</code><br><strong>Address form:</strong> <code>p2wpkh</code></div></td></tr><tr><td class="num">0.00014568</td><td><a href="#vec-sequential_1to10k" class="vec-tag">sequential 1to10k</a></td><td>6d</td><td><code>bc1qw508d6…v8f3t4</code></td><td><a href="https://mempool.space/tx/a9cb153ebe0479ad68260f5a17927797aabea198f401ad4aa16686f3eb57485b" target="_blank" rel="noopener">a9cb153e…57485b</a></td><td><a href="javascript:void(0)" class="why-toggle" data-target="why-4" style="color:var(--info); border-bottom:1px dotted var(--info); text-decoration:none; cursor:pointer;">why?</a></td></tr><tr id="why-4" class="why-detail" style="display:none; background:rgba(0,0,0,0.12);"><td colspan="6" style="padding:0.8em 1em; font-size:0.92em; line-height:1.5;"><p style="margin:0.4em 0;">Anyone using a private key in 1..10,000 (e.g. <code>k = 1</code>, <code>2</code>, …) shares it with anyone who has ever downloaded a Bitcoin puzzle list. These are the famous "puzzle addresses" — funds sent here are typically swept within seconds by automated bots.</p><div style="margin-top:0.6em; padding:0.5em 0.8em; background:rgba(0,0,0,0.18); border-left:3px solid var(--gold); border-radius:3px; font-size:0.9em;"><strong>Private key:</strong> <code>k = 1</code><br><strong>Address form:</strong> <code>p2wpkh</code></div></td></tr></tbody></table>
+  </details>
+
+  <details class="mc">
+    <summary>Top recent burn deposits</summary>
+    <table class="whales"><thead><tr><th class="num">BTC</th><th>Vector</th><th>Age</th><th>Address</th><th>txid</th><th></th></tr></thead><tbody><tr><td class="num">0.00000546</td><td><a href="#vec-burn" class="vec-tag">burn</a></td><td>7h</td><td><code>1BitcoinEa…f59kuE</code></td><td><a href="https://mempool.space/tx/560f0e2a7ed8052b7182cc816f3c09685ee9f3a947dbee128cdbf8b9cac8a2aa" target="_blank" rel="noopener">560f0e2a…c8a2aa</a></td><td><a href="javascript:void(0)" class="why-toggle" data-target="why-0" style="color:var(--info); border-bottom:1px dotted var(--info); text-decoration:none; cursor:pointer;">why?</a></td></tr><tr id="why-0" class="why-detail" style="display:none; background:rgba(0,0,0,0.12);"><td colspan="6" style="padding:0.8em 1em; font-size:0.92em; line-height:1.5;"><p style="margin:0.4em 0;">Provably-unspendable addresses where Bitcoin sent there is permanently destroyed (no private key exists). Used for proof-of-burn token bootstrapping (Counterparty XCP, Chancecoin CHA), data anchoring (OLGA Stamps, SRC-20), and memetic burns. The top 3 burn addresses hold 99% of all permanently lost BTC.</p></td></tr><tr><td class="num">0.00000546</td><td><a href="#vec-burn" class="vec-tag">burn</a></td><td>2d</td><td><code>1BitcoinEa…f59kuE</code></td><td><a href="https://mempool.space/tx/484bc89f5a781074f6b41bc79645646b3d6e554db799a651a67ee80faf98f3be" target="_blank" rel="noopener">484bc89f…98f3be</a></td><td><a href="javascript:void(0)" class="why-toggle" data-target="why-1" style="color:var(--info); border-bottom:1px dotted var(--info); text-decoration:none; cursor:pointer;">why?</a></td></tr><tr id="why-1" class="why-detail" style="display:none; background:rgba(0,0,0,0.12);"><td colspan="6" style="padding:0.8em 1em; font-size:0.92em; line-height:1.5;"><p style="margin:0.4em 0;">Provably-unspendable addresses where Bitcoin sent there is permanently destroyed (no private key exists). Used for proof-of-burn token bootstrapping (Counterparty XCP, Chancecoin CHA), data anchoring (OLGA Stamps, SRC-20), and memetic burns. The top 3 burn addresses hold 99% of all permanently lost BTC.</p></td></tr><tr><td class="num">0.00001000</td><td><a href="#vec-burn" class="vec-tag">burn</a></td><td>5d</td><td><code>1Counterpa…UWLpVr</code></td><td><a href="https://mempool.space/tx/419f8c72a6efa3825a5e43ee59e8975b75a54ab8888c0192a7dc2c851dc623f3" target="_blank" rel="noopener">419f8c72…c623f3</a></td><td><a href="javascript:void(0)" class="why-toggle" data-target="why-2" style="color:var(--info); border-bottom:1px dotted var(--info); text-decoration:none; cursor:pointer;">why?</a></td></tr><tr id="why-2" class="why-detail" style="display:none; background:rgba(0,0,0,0.12);"><td colspan="6" style="padding:0.8em 1em; font-size:0.92em; line-height:1.5;"><p style="margin:0.4em 0;">Provably-unspendable addresses where Bitcoin sent there is permanently destroyed (no private key exists). Used for proof-of-burn token bootstrapping (Counterparty XCP, Chancecoin CHA), data anchoring (OLGA Stamps, SRC-20), and memetic burns. The top 3 burn addresses hold 99% of all permanently lost BTC.</p></td></tr><tr><td class="num">0.00001000</td><td><a href="#vec-burn" class="vec-tag">burn</a></td><td>5d</td><td><code>1111111111…4oLvT2</code></td><td><a href="https://mempool.space/tx/96aa9a5b3948ac23bcd37466e49c8fc3bc392affc5a8476dda56e6601dea781b" target="_blank" rel="noopener">96aa9a5b…ea781b</a></td><td><a href="javascript:void(0)" class="why-toggle" data-target="why-3" style="color:var(--info); border-bottom:1px dotted var(--info); text-decoration:none; cursor:pointer;">why?</a></td></tr><tr id="why-3" class="why-detail" style="display:none; background:rgba(0,0,0,0.12);"><td colspan="6" style="padding:0.8em 1em; font-size:0.92em; line-height:1.5;"><p style="margin:0.4em 0;">Provably-unspendable addresses where Bitcoin sent there is permanently destroyed (no private key exists). Used for proof-of-burn token bootstrapping (Counterparty XCP, Chancecoin CHA), data anchoring (OLGA Stamps, SRC-20), and memetic burns. The top 3 burn addresses hold 99% of all permanently lost BTC.</p></td></tr><tr><td class="num">0.00000722</td><td><a href="#vec-burn" class="vec-tag">burn</a></td><td>6d</td><td><code>1BitcoinEa…f59kuE</code></td><td><a href="https://mempool.space/tx/5a58162caa57a9736f51a81805706b57465b81413a2668fddca455beda13beea" target="_blank" rel="noopener">5a58162c…13beea</a></td><td><a href="javascript:void(0)" class="why-toggle" data-target="why-4" style="color:var(--info); border-bottom:1px dotted var(--info); text-decoration:none; cursor:pointer;">why?</a></td></tr><tr id="why-4" class="why-detail" style="display:none; background:rgba(0,0,0,0.12);"><td colspan="6" style="padding:0.8em 1em; font-size:0.92em; line-height:1.5;"><p style="margin:0.4em 0;">Provably-unspendable addresses where Bitcoin sent there is permanently destroyed (no private key exists). Used for proof-of-burn token bootstrapping (Counterparty XCP, Chancecoin CHA), data anchoring (OLGA Stamps, SRC-20), and memetic burns. The top 3 burn addresses hold 99% of all permanently lost BTC.</p></td></tr></tbody></table>
+  </details>
+
+  <details class="mc" id="vec-details-root">
+    <summary>Per-vector seed breakdown <small>(click a Vector tag above to jump here)</small></summary>
+    
+    <div class="vec-detail" id="vec-burn">
+      <h4 style="margin:1em 0 0.3em; color:var(--text); font-weight:600;">
+        Known burn addresses
+        <small style="color:var(--text-mute); font-weight:400;">
+          · 404,370 inflows · 4 distinct seeds · 2,955.01 BTC cycled
+        </small>
+      </h4>
+      <table class="whales" style="font-size:0.88em;">
+        <thead><tr>
+          <th class="num">Seed&nbsp;ID</th>
+          <th>Addr type</th>
+          <th>Example address</th>
+          <th class="num">Events</th>
+          <th class="num">BTC</th>
+        </tr></thead>
+        <tbody><tr><td class="num">3</td><td>counterparty_main</td><td><code>1Counterpa…UWLpVr</code></td><td class="num">3246</td><td class="num">2,131.00</td></tr><tr><td class="num">2</td><td>chancecoin</td><td><code>1Chancecoi…ZELUFD</code></td><td class="num">385812</td><td class="num">807.24</td></tr><tr><td class="num">0</td><td>counterparty</td><td><code>1Counterpa…UWLpVr</code></td><td class="num">5786</td><td class="num">13.4188</td></tr><tr><td class="num">1</td><td>all_zeros</td><td><code>1111111111…4oLvT2</code></td><td class="num">9526</td><td class="num">3.3520</td></tr></tbody>
+      </table>
+    </div>
+    <div class="vec-detail" id="vec-sequential_1to10k">
+      <h4 style="margin:1em 0 0.3em; color:var(--text); font-weight:600;">
+        Sequential privkeys 1..10K (puzzle addresses)
+        <small style="color:var(--text-mute); font-weight:400;">
+          · 2,046 inflows · 236 distinct seeds · 11.7759 BTC cycled
+        </small>
+      </h4>
+      <table class="whales" style="font-size:0.88em;">
+        <thead><tr>
+          <th class="num">Seed&nbsp;ID</th>
+          <th>Addr type</th>
+          <th>Example address</th>
+          <th class="num">Events</th>
+          <th class="num">BTC</th>
+        </tr></thead>
+        <tbody><tr><td class="num">1</td><td>p2wpkh</td><td><code>bc1qw508d6…v8f3t4</code></td><td class="num">1425</td><td class="num">8.1252</td></tr><tr><td class="num">128</td><td>p2pkh_uncompressed</td><td><code>1EoXPE6MzT…AcZyH4</code></td><td class="num">14</td><td class="num">0.73343511</td></tr><tr><td class="num">94</td><td>p2pkh_uncompressed</td><td><code>1LtUqEjvsT…cRTeCx</code></td><td class="num">1</td><td class="num">0.35000000</td></tr><tr><td class="num">3</td><td>p2wpkh</td><td><code>bc1q0ht9ty…3re7zg</code></td><td class="num">47</td><td class="num">0.31965732</td></tr><tr><td class="num">1975</td><td>p2pkh_uncompressed</td><td><code>1iT5k9C6PQ…5kngh3</code></td><td class="num">2</td><td class="num">0.26186815</td></tr><tr><td class="num">2</td><td>p2wpkh</td><td><code>bc1qq6hag6…xechjp</code></td><td class="num">66</td><td class="num">0.18028391</td></tr><tr><td class="num">31</td><td>p2pkh_uncompressed</td><td><code>1KWj99Jwd9…QrLFVc</code></td><td class="num">3</td><td class="num">0.16474666</td></tr><tr><td class="num">77</td><td>p2pkh_uncompressed</td><td><code>1P4C2RHfYZ…M4PxLn</code></td><td class="num">3</td><td class="num">0.16049554</td></tr><tr><td class="num">26</td><td>p2pkh_uncompressed</td><td><code>1Gggh1qxKS…hQDyo2</code></td><td class="num">3</td><td class="num">0.15000546</td></tr><tr><td class="num">21</td><td>p2pkh_uncompressed</td><td><code>1E6NuFjCi2…JeBW3k</code></td><td class="num">5</td><td class="num">0.10515146</td></tr><tr><td class="num">95</td><td>p2pkh_uncompressed</td><td><code>1LutqRAJkL…cBdvEt</code></td><td class="num">2</td><td class="num">0.10458034</td></tr><tr><td class="num">14</td><td>p2pkh_uncompressed</td><td><code>1KgVr2GExo…k9Cexk</code></td><td class="num">5</td><td class="num">0.10253280</td></tr><tr><td class="num">123</td><td>p2pkh_uncompressed</td><td><code>1HHKanEL28…VEPzw5</code></td><td class="num">2</td><td class="num">0.09100374</td></tr><tr><td class="num">229</td><td>p2pkh_uncompressed</td><td><code>1EcDD3QLhS…4yT8xM</code></td><td class="num">5</td><td class="num">0.08084386</td></tr><tr><td class="num">75</td><td>p2pkh_uncompressed</td><td><code>1AdaHxALc5…v3sX6i</code></td><td class="num">6</td><td class="num">0.06478172</td></tr><tr><td class="num">105</td><td>p2pkh_uncompressed</td><td><code>1DerC5SzMP…us6nLT</code></td><td class="num">2</td><td class="num">0.05100000</td></tr><tr><td class="num">513</td><td>p2pkh_uncompressed</td><td><code>1Pb1NNzMTP…1kxStQ</code></td><td class="num">1</td><td class="num">0.04472058</td></tr><tr><td class="num">23</td><td>p2pkh_uncompressed</td><td><code>1MNagJqYUs…wZtjkg</code></td><td class="num">6</td><td class="num">0.04040770</td></tr><tr><td class="num">613</td><td>p2pkh_uncompressed</td><td><code>1FBY6EV1rT…mT7cnq</code></td><td class="num">1</td><td class="num">0.03900000</td></tr><tr><td class="num">91</td><td>p2pkh_uncompressed</td><td><code>1P1Dur122P…dSSm4z</code></td><td class="num">2</td><td class="num">0.03790000</td></tr></tbody>
+      </table>
+    </div>
+    <div class="vec-detail" id="vec-bip39_tier1">
+      <h4 style="margin:1em 0 0.3em; color:var(--text); font-weight:600;">
+        BIP39 all-same-word
+        <small style="color:var(--text-mute); font-weight:400;">
+          · 277 inflows · 19 distinct seeds · 1.3668 BTC cycled
+        </small>
+      </h4>
+      <table class="whales" style="font-size:0.88em;">
+        <thead><tr>
+          <th class="num">Seed&nbsp;ID</th>
+          <th>Addr type</th>
+          <th>Example address</th>
+          <th class="num">Events</th>
+          <th class="num">BTC</th>
+        </tr></thead>
+        <tbody><tr><td class="num">8192</td><td>bip84_p2wpkh_i2</td><td><code>bc1qzmtrqs…skkug6</code></td><td class="num">20</td><td class="num">0.65644917</td></tr><tr><td class="num">9251</td><td>bip84_p2wpkh_i1</td><td><code>bc1qgmx807…kr34nr</code></td><td class="num">2</td><td class="num">0.48258755</td></tr><tr><td class="num">0</td><td>bip84_p2wpkh_i9</td><td><code>bc1qxr4fjk…8qwgum</code></td><td class="num">193</td><td class="num">0.16794236</td></tr><tr><td class="num">102</td><td>bip49_p2sh_p2wpkh_i1</td><td><code>3Aqj88oSKh…FoRmXD</code></td><td class="num">12</td><td class="num">0.04397026</td></tr><tr><td class="num">1888</td><td>bip49_p2sh_p2wpkh_i8</td><td><code>3KwpisEZDt…8hPCPX</code></td><td class="num">2</td><td class="num">0.00695710</td></tr><tr><td class="num">2044</td><td>bip84_p2wpkh_i0</td><td><code>bc1qey7mf9…90cu3w</code></td><td class="num">1</td><td class="num">0.00400000</td></tr><tr><td class="num">8330</td><td>bip84_p2wpkh_i9</td><td><code>bc1qzp99xp…kuc3p8</code></td><td class="num">29</td><td class="num">0.00312924</td></tr><tr><td class="num">8217</td><td>bip84_p2wpkh_i0</td><td><code>bc1q4ngyaj…htcers</code></td><td class="num">2</td><td class="num">0.00066334</td></tr><tr><td class="num">6144</td><td>bip84_p2wpkh_i0</td><td><code>bc1qvw2xfp…zy8t2v</code></td><td class="num">1</td><td class="num">0.00037625</td></tr><tr><td class="num">29</td><td>bip44_legacy_i0</td><td><code>1EWXS2qWa3…Yo53SC</code></td><td class="num">1</td><td class="num">0.00020000</td></tr><tr><td class="num">669</td><td>bip84_p2wpkh_i0</td><td><code>bc1qxtgm52…dh5853</code></td><td class="num">1</td><td class="num">0.00015709</td></tr><tr><td class="num">9624</td><td>bip84_p2wpkh_i0</td><td><code>bc1qnsnmfv…0s7rks</code></td><td class="num">2</td><td class="num">0.00012742</td></tr><tr><td class="num">138</td><td>bip84_p2wpkh_i0</td><td><code>bc1qcw56du…6qawgy</code></td><td class="num">1</td><td class="num">0.00009011</td></tr><tr><td class="num">1788</td><td>bip84_p2wpkh_i0</td><td><code>bc1qy4l4xs…wvfzz3</code></td><td class="num">1</td><td class="num">0.00008894</td></tr><tr><td class="num">980</td><td>bip84_p2wpkh_i1</td><td><code>bc1qape5fs…8c5t0t</code></td><td class="num">4</td><td class="num">0.00005590</td></tr><tr><td class="num">24</td><td>bip44_legacy_i0</td><td><code>1BAp8d7dVP…zM4xDH</code></td><td class="num">2</td><td class="num">0.00002000</td></tr><tr><td class="num">19</td><td>bip84_p2wpkh_i0</td><td><code>bc1q8hkjua…wg88dt</code></td><td class="num">1</td><td class="num">0.00001000</td></tr><tr><td class="num">38</td><td>bip84_p2wpkh_i0</td><td><code>bc1q3rek6w…05pkyf</code></td><td class="num">1</td><td class="num">0.00001000</td></tr><tr><td class="num">1531</td><td>bip84_p2wpkh_i0</td><td><code>bc1qymngk0…vcevfl</code></td><td class="num">1</td><td class="num">0.00000600</td></tr></tbody>
+      </table>
+    </div>
+    <div class="vec-detail" id="vec-bip39_brain">
+      <h4 style="margin:1em 0 0.3em; color:var(--text); font-weight:600;">
+        BIP39 brain wallets (SHA256 phrases)
+        <small style="color:var(--text-mute); font-weight:400;">
+          · 26 inflows · 12 distinct seeds · 0.01516809 BTC cycled
+        </small>
+      </h4>
+      <table class="whales" style="font-size:0.88em;">
+        <thead><tr>
+          <th class="num">Seed&nbsp;ID</th>
+          <th>Addr type</th>
+          <th>Example address</th>
+          <th class="num">Events</th>
+          <th class="num">BTC</th>
+        </tr></thead>
+        <tbody><tr><td class="num">7429</td><td>bip84_p2wpkh_i0</td><td><code>bc1qh2nsjh…nvprc4</code></td><td class="num">1</td><td class="num">0.01000000</td></tr><tr><td class="num">8425</td><td>bip84_p2wpkh_i1</td><td><code>bc1qm7pqfa…d7jc29</code></td><td class="num">4</td><td class="num">0.00340067</td></tr><tr><td class="num">7990</td><td>bip84_p2wpkh_i2</td><td><code>bc1qz7kgtd…r0lj5h</code></td><td class="num">4</td><td class="num">0.00061098</td></tr><tr><td class="num">7499</td><td>bip44_legacy_i8</td><td><code>1P8EBMZtNw…W8kRqP</code></td><td class="num">9</td><td class="num">0.00053638</td></tr><tr><td class="num">11994</td><td>bip44_legacy_i0</td><td><code>1FT2xCHANe…9AJSZg</code></td><td class="num">1</td><td class="num">0.00024030</td></tr><tr><td class="num">7514</td><td>bip49_p2sh_p2wpkh_i0</td><td><code>39HoHSiMYn…Dy86SV</code></td><td class="num">1</td><td class="num">0.00019770</td></tr><tr><td class="num">4</td><td>bip84_p2wpkh_i0</td><td><code>bc1qjx54sq…rmzz2p</code></td><td class="num">1</td><td class="num">0.00010000</td></tr><tr><td class="num">9485</td><td>bip84_p2wpkh_i0</td><td><code>bc1q3neqe6…fk07wm</code></td><td class="num">1</td><td class="num">0.00002603</td></tr><tr><td class="num">10970</td><td>bip84_p2wpkh_i0</td><td><code>bc1q8q64fn…xu6yp4</code></td><td class="num">1</td><td class="num">0.00002603</td></tr><tr><td class="num">7474</td><td>bip44_legacy_i0</td><td><code>1MHU6KAUEA…kr4XDw</code></td><td class="num">1</td><td class="num">0.00001000</td></tr><tr><td class="num">7994</td><td>bip84_p2wpkh_i0</td><td><code>bc1qahj3zr…wq2xzm</code></td><td class="num">1</td><td class="num">0.00001000</td></tr><tr><td class="num">8429</td><td>bip84_p2wpkh_i0</td><td><code>bc1q7ug0vq…ygjeuz</code></td><td class="num">1</td><td class="num">0.00001000</td></tr></tbody>
+      </table>
+    </div>
+    <div class="vec-detail" id="vec-milksad">
+      <h4 style="margin:1em 0 0.3em; color:var(--text); font-weight:600;">
+        Milk Sad weak-RNG addresses
+        <small style="color:var(--text-mute); font-weight:400;">
+          · 59 inflows · 42 distinct seeds · 0.00626358 BTC cycled
+        </small>
+      </h4>
+      <table class="whales" style="font-size:0.88em;">
+        <thead><tr>
+          <th class="num">Seed&nbsp;ID</th>
+          <th>Addr type</th>
+          <th>Example address</th>
+          <th class="num">Events</th>
+          <th class="num">BTC</th>
+        </tr></thead>
+        <tbody><tr><td class="num">288598</td><td>p2wpkh</td><td><code>bc1qs6w4m8…zegzvf</code></td><td class="num">1</td><td class="num">0.00357620</td></tr><tr><td class="num">295517</td><td>p2pkh</td><td><code>14feAEESXG…AcdcD8</code></td><td class="num">1</td><td class="num">0.00061702</td></tr><tr><td class="num">280545</td><td>p2wpkh</td><td><code>bc1qcdat7z…lt0h5d</code></td><td class="num">1</td><td class="num">0.00040000</td></tr><tr><td class="num">311510</td><td>p2pkh</td><td><code>1Nbm3JoDpw…XoQ6Ej</code></td><td class="num">1</td><td class="num">0.00021000</td></tr><tr><td class="num">286388</td><td>p2wpkh</td><td><code>bc1qnjg0jd…erkf9g</code></td><td class="num">1</td><td class="num">0.00016734</td></tr><tr><td class="num">298523</td><td>p2pkh</td><td><code>17yb2XAcaM…FV8q3u</code></td><td class="num">1</td><td class="num">0.00010000</td></tr><tr><td class="num">293395</td><td>p2pkh</td><td><code>12AKRNHpFh…774PxQ</code></td><td class="num">1</td><td class="num">0.00008379</td></tr><tr><td class="num">165714</td><td>p2sh</td><td><code>3Eptb4rdcL…ZomASo</code></td><td class="num">1</td><td class="num">0.00008000</td></tr><tr><td class="num">305633</td><td>p2pkh</td><td><code>1Fv5bgjRSd…mJVnrV</code></td><td class="num">3</td><td class="num">0.00007295</td></tr><tr><td class="num">303783</td><td>p2pkh</td><td><code>1DohzJBFJ2…wMXLUo</code></td><td class="num">7</td><td class="num">0.00006403</td></tr><tr><td class="num">307954</td><td>p2pkh</td><td><code>1JZBwaA29C…aAkfmP</code></td><td class="num">3</td><td class="num">0.00006147</td></tr><tr><td class="num">308185</td><td>p2pkh</td><td><code>1Jqq37KkZE…dawbkJ</code></td><td class="num">3</td><td class="num">0.00006146</td></tr><tr><td class="num">296762</td><td>p2pkh</td><td><code>164qRoL9B3…AEcjaw</code></td><td class="num">2</td><td class="num">0.00005949</td></tr><tr><td class="num">308279</td><td>p2pkh</td><td><code>1JwSSubhmg…3Lfy1T</code></td><td class="num">2</td><td class="num">0.00005430</td></tr><tr><td class="num">306581</td><td>p2pkh</td><td><code>1GyT5WrLYp…bjuBff</code></td><td class="num">1</td><td class="num">0.00005000</td></tr><tr><td class="num">9677</td><td>p2pkh</td><td><code>1Ak8PffB2m…pzJvQP</code></td><td class="num">1</td><td class="num">0.00004750</td></tr><tr><td class="num">21260</td><td>p2pkh</td><td><code>1MVGa13XFv…mAyrsJ</code></td><td class="num">1</td><td class="num">0.00004750</td></tr><tr><td class="num">295892</td><td>p2pkh</td><td><code>1565qkBbLc…wdSgvX</code></td><td class="num">1</td><td class="num">0.00004750</td></tr><tr><td class="num">297314</td><td>p2pkh</td><td><code>16ga2uqnF1…wDyJav</code></td><td class="num">1</td><td class="num">0.00004750</td></tr><tr><td class="num">310712</td><td>p2pkh</td><td><code>1MgFBo6MwM…V8HDeq</code></td><td class="num">1</td><td class="num">0.00004750</td></tr></tbody>
+      </table>
+    </div>
+    <div class="vec-detail" id="vec-bip39_tier2a_sequential">
+      <h4 style="margin:1em 0 0.3em; color:var(--text); font-weight:600;">
+        BIP39 alphabetical
+        <small style="color:var(--text-mute); font-weight:400;">
+          · 2 inflows · 1 distinct seeds · 0.00217481 BTC cycled
+        </small>
+      </h4>
+      <table class="whales" style="font-size:0.88em;">
+        <thead><tr>
+          <th class="num">Seed&nbsp;ID</th>
+          <th>Addr type</th>
+          <th>Example address</th>
+          <th class="num">Events</th>
+          <th class="num">BTC</th>
+        </tr></thead>
+        <tbody><tr><td class="num">8629</td><td>bip84_p2wpkh_i1</td><td><code>bc1qwk0wsa…uwm89f</code></td><td class="num">2</td><td class="num">0.00217481</td></tr></tbody>
+      </table>
+    </div>
+    <div class="vec-detail" id="vec-bip39_tier5_numeric">
+      <h4 style="margin:1em 0 0.3em; color:var(--text); font-weight:600;">
+        BIP39 numeric patterns (π, e, fib, primes…)
+        <small style="color:var(--text-mute); font-weight:400;">
+          · 1 inflows · 1 distinct seeds · 0.00046104 BTC cycled
+        </small>
+      </h4>
+      <table class="whales" style="font-size:0.88em;">
+        <thead><tr>
+          <th class="num">Seed&nbsp;ID</th>
+          <th>Addr type</th>
+          <th>Example address</th>
+          <th class="num">Events</th>
+          <th class="num">BTC</th>
+        </tr></thead>
+        <tbody><tr><td class="num">5</td><td>bip84_p2wpkh_i0</td><td><code>bc1qlqefsh…n2hdyl</code></td><td class="num">1</td><td class="num">0.00046104</td></tr></tbody>
+      </table>
+    </div>
+  </details>
+
+  <style>
+    .vec-tag {
+      color: var(--info); text-decoration: none;
+      border-bottom: 1px dotted var(--info);
+      cursor: pointer; font-family: inherit;
+    }
+    .vec-tag:hover { color: var(--gold); border-bottom-color: var(--gold); }
+    .campaigns h4 { margin: 1.2em 0 0.4em; font-size: 0.95em; }
+    .incident { border: 1px solid var(--border); border-left: 3px solid var(--gold);
+      border-radius: 8px; padding: 0.8em 1em; margin: 0.4em 0 0.8em; }
+    .inc-h small { color: var(--text-mute); }
+    .inc-stats { display: flex; flex-wrap: wrap; gap: 0.6em 1.8em; margin: 0.6em 0; }
+    .inc-stats b { display: block; font-size: 1.25em; }
+    .inc-stats span { color: var(--text-mute); font-size: 0.8em; }
+    .incident p { margin: 0.4em 0; }
+    .inc-note, .inc-src { color: var(--text-mute); font-size: 0.85em; }
+    .inc-dests { margin: 0.4em 0; padding-left: 1.2em; font-size: 0.85em; word-break: break-all; }
+    .vec-detail:target {
+      background: rgba(184, 153, 104, 0.08);
+      border-left: 3px solid var(--gold);
+      padding: 0 0.8em; border-radius: 4px;
+    }
+  </style>
+
+  <script>
+    (function() {
+      function openIfHash() {
+        if (!location.hash) return;
+        var el = document.querySelector(location.hash);
+        if (!el) return;
+        var d = el.closest("details");
+        while (d) {
+          d.open = true;
+          d = d.parentElement && d.parentElement.closest("details");
+        }
+        el.scrollIntoView({behavior: "smooth", block: "start"});
+      }
+      window.addEventListener("hashchange", openIfHash);
+      // Run after this fragment is placed in the page.
+      setTimeout(openIfHash, 50);
+
+      // "why?" toggles in the top-recent tables
+      document.querySelectorAll('a.why-toggle').forEach(function(a) {
+        a.addEventListener('click', function(ev) {
+          ev.preventDefault();
+          var id = a.getAttribute('data-target');
+          var row = document.getElementById(id);
+          if (!row) return;
+          if (row.style.display === 'none' || row.style.display === '') {
+            row.style.display = 'table-row';
+            a.textContent = 'hide';
+          } else {
+            row.style.display = 'none';
+            a.textContent = 'why?';
+          }
+        });
+      });
+    })();
+  </script>
+
+  <p style="color:var(--text-mute); font-size:0.78em; margin-top:0.8em;">
+    Updated hourly · last build 2026-10-31 16:46 UTC
+  </p>
+</details>
+
+  <div class="footer">
+  <details class="howto">
+    <summary>How to read this report</summary>
+    <ul>
+      <li><b>Mempool</b> — valid transactions waiting to be mined. Miners take the best-paying ones for the next block, roughly every 10 minutes.</li>
+      <li><b>sat/vB</b> — fee rate in satoshis per virtual byte. A higher rate gets picked sooner.</li>
+      <li><b>Forecast</b> — the mempool sorted into blocks the way this node would mine it now. New arrivals that pay more will jump the queue, so later blocks are less certain.</li>
+      <li><b>Queue position</b> — how many blocks of better-paying weight sit ahead of a fee band. "Next block" means a tx at that rate would fit right now.</li>
+      <li><b>Monetary / inscription / data</b> — a heuristic from script types and witness sizes: monetary txs move BTC; data txs mainly carry payloads (OP_RETURN, protocols).</li>
+      <li><b>Whale</b> — a single pending tx moving at least 100 BTC.</li>
+    </ul>
+  </details>
+  <p class="station">Station: Raspberry Pi running Satoshi:31.0.0 · 10 peers
+    (0 in / 10 out) · up 2d ·
+    mempool memory 110 / 300 MB ·
+    min relay 0.10 sat/vB</p>
+  <p class="links"><a href="data.json">JSON API</a> ·
+    <a href="https://bsky.app/profile/btcweather.report" target="_blank" rel="noopener">Bluesky</a> ·
+    <a href="https://x.com/BTCWeatherRep" target="_blank" rel="noopener">X</a></p>
+</div>
+
+</div>
+<script>
+(function(){
+  function fmt(s){ s=Math.max(0,s);
+    if(s<90) return Math.round(s)+'s';
+    if(s<5400) return Math.round(s/60)+'m';
+    if(s<172800) return (s/3600).toFixed(1)+'h';
+    return Math.round(s/86400)+'d'; }
+  function tick(){ var now=Date.now()/1000;
+    document.querySelectorAll('time[data-ts]').forEach(function(t){
+      t.textContent=fmt(now-(+t.dataset.ts))+' ago'; }); }
+  tick(); setInterval(tick,15000);
+  var gen=+document.body.dataset.generated;
+  setInterval(function(){
+    if(document.hidden) return;
+    fetch('data.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();})
+      .then(function(d){ if(d.generated_at>gen+20) location.reload(); }).catch(function(){});
+  },60000);
+})();
+</script>
+</body>
+</html>
